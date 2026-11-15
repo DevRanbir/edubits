@@ -10,7 +10,7 @@ import {
   ListTodo,
   Monitor,
   Settings,
-  Plus,
+  LogIn,
   Moon as MoonIcon,
   Sun as SunIcon,
   ChevronsLeft,
@@ -19,7 +19,7 @@ import {
 import "./sidebar.css";
 
 export default function Sidebar() {
-  const { user, tempLogin } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -241,14 +241,14 @@ export default function Sidebar() {
             </div>
           ) : (
             <div
-              className="sidebar-icon sidebar-add-account"
-              onClick={() => tempLogin("user")}
-              title={!isExpanded ? "Click for Quick 1-Click Login" : undefined}
+              className="sidebar-icon sidebar-login-btn"
+              onClick={() => navigate("/login")}
+              title={!isExpanded ? "Log In" : undefined}
               role="button"
               tabIndex={0}
             >
-              <Plus size={20} style={{ minWidth: 20 }} />
-              <span className="sidebar-text">1-Click Login</span>
+              <LogIn size={20} style={{ minWidth: 20 }} />
+              <span className="sidebar-text">Log In</span>
             </div>
           )}
 

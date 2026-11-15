@@ -25,6 +25,12 @@
   flex-direction: column;
 }
 
+.hp-everything a,
+.hp-everything a:hover,
+.hp-everything a:focus {
+  text-decoration: none !important;
+}
+
 body.light .hp-everything {
   --bg: #f7faf9;
   --surface: #ffffff;
@@ -552,16 +558,24 @@ body.light .hp-everything {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  text-decoration: none;
+  text-decoration: none !important;
   color: inherit;
   transition: all 0.2s ease;
   box-shadow: none;
+}
+
+.hp-subject-card,
+.hp-subject-card:hover,
+.hp-subject-card:focus,
+.hp-subject-card * {
+  text-decoration: none !important;
 }
 
 .hp-subject-card:hover {
   border-color: rgba(255, 255, 255, 0.14);
   background: rgba(18, 24, 32, 0.85);
   transform: translateY(-2px);
+  text-decoration: none !important;
 }
 
 .hp-subject-card-overlay {

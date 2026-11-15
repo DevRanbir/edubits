@@ -367,19 +367,36 @@ body.quiz-is-live .sidebar > * {
   margin-top: 1px;
 }
 
-/* Unauthenticated Add Account Button */
-.sidebar-add-account {
-  border: 1px dashed rgba(255, 255, 255, 0.2);
+/* Unauthenticated Log In Button */
+.sidebar-login-btn {
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  background: var(--surface-2, rgba(255, 255, 255, 0.04));
+  color: var(--text, #f0f0f8);
   border-radius: 8px;
   margin: 0 8px;
   width: calc(100% - 16px) !important;
   padding-left: 10px !important;
   height: 38px !important;
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
 
-.sidebar-add-account:hover {
-  border-color: rgba(255, 255, 255, 0.45);
-  background-color: rgba(255, 255, 255, 0.05);
+.sidebar-login-btn:hover {
+  border-color: var(--primary, #3e9b8f);
+  background: var(--primary-subtle, rgba(62, 155, 143, 0.12));
+  color: var(--primary, #3e9b8f);
+}
+
+body.light .sidebar-login-btn {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  color: #0b1413;
+}
+
+body.light .sidebar-login-btn:hover {
+  border-color: #287d72;
+  background: rgba(40, 125, 114, 0.08);
+  color: #287d72;
 }
 
 /* Mobile Toggle Buttons */
