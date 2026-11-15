@@ -1,0 +1,110 @@
+.magnetic-nav-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 2rem;
+  position: sticky;
+  top: 1rem;
+  z-index: 60;
+}
+
+.magnetic-nav {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--surface-2, #141518);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 5px;
+  gap: 2px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.magnetic-nav-item {
+  position: relative;
+  padding: 8px 22px;
+  font-size: 13.5px;
+  font-weight: 500;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8a8f98;
+  transition: color 0.2s ease;
+  z-index: 10;
+  outline: none;
+  user-select: none;
+  font-family: inherit;
+}
+
+.magnetic-nav-item.active {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.magnetic-nav-item:hover {
+  color: #ffffff;
+}
+
+.nav-pill-active {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  z-index: -10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.nav-pill-hover {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 9999px;
+  z-index: -10;
+}
+
+.nav-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* ============================================================================
+   Magnetic Nav Light Mode
+   ============================================================================ */
+
+body.light .magnetic-nav {
+  background-color: var(--surface, #ffffff);
+  border-color: var(--border, #d4dedd);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+body.light .magnetic-nav-item {
+  color: var(--muted, #536764);
+}
+
+body.light .magnetic-nav-item:hover {
+  color: var(--text, #0b1413);
+}
+
+body.light .magnetic-nav-item.active {
+  color: var(--text, #0b1413);
+}
+
+body.light .nav-pill-active {
+  background: var(--surface-2, #edf3f2);
+  border-color: var(--border, #d4dedd);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+body.light .nav-pill-hover {
+  background: rgba(0, 0, 0, 0.04);
+}

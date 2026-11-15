@@ -17,16 +17,16 @@ export const featuredTools = [
 
 export const otherTools = [
   {
-    href: "/sgpa",
+    href: "/tasks?tab=sgpa",
     icon: GraduationCap,
-    name: "GPA Calculator",
-    desc: "Calculate SGPA & CGPA",
+    name: "SGPA Calculator",
+    desc: "Calculate semester SGPA in Tool Deck",
   },
   {
-    href: "/internal",
+    href: "/tasks?tab=internals",
     icon: ClipboardList,
     name: "Internal Marks Calculator",
-    desc: "Calculate internal marks for each subject",
+    desc: "Calculate internal marks in Tool Deck",
   },
 ];
 

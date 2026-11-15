@@ -4,8 +4,8 @@ import SGPA from "../SGPA";
 import CGPA from "../../cgpa/CGPA";
 import "./Sgpapage.css";
 
-export default function SGPAPage() {
-  const [activeTool, setActiveTool] = useState(null);
+export default function SGPAPage({ initialTool = null }) {
+  const [activeTool, setActiveTool] = useState(initialTool);
   const [sgpaList, setSgpaList] = useState(() => {
     try {
       const saved = localStorage.getItem("sgpaList");

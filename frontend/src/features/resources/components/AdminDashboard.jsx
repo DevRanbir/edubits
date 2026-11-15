@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { toast } from "sonner";
 import {
   uploadResource,
   uploadPaperPair,
@@ -137,9 +138,12 @@ export default function AdminDashboard() {
       );
       setStatus("success");
       setSuccessMsg(`Paper pair uploaded! Paper Key: ${result.paperKey}`);
+      toast.success(`Paper pair uploaded! Paper Key: ${result.paperKey}`);
       resetPaperPair();
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || err.message || "Upload failed.");
+      const msg = err.response?.data?.message || err.message || "Upload failed.";
+      setErrorMsg(msg);
+      toast.error(msg);
       setStatus("error");
     }
   };
@@ -175,10 +179,14 @@ export default function AdminDashboard() {
         setProgress
       );
       setStatus("success");
-      setSuccessMsg(`${sfResourceType === "playlist" ? "Playlist added" : "File uploaded"}! ID: ${resource._id}`);
+      const succ = `${sfResourceType === "playlist" ? "Playlist added" : "File uploaded"}! ID: ${resource._id}`;
+      setSuccessMsg(succ);
+      toast.success(succ);
       resetSingleFile();
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || err.message || "Upload failed.");
+      const msg = err.response?.data?.message || err.message || "Upload failed.";
+      setErrorMsg(msg);
+      toast.error(msg);
       setStatus("error");
     }
   };
@@ -231,10 +239,14 @@ export default function AdminDashboard() {
       }
 
       setStatus("success");
-      setSuccessMsg(`Uploaded ${questions.length} questions for ${qjSubject} (${qjMode})`);
+      const succ = `Uploaded ${questions.length} questions for ${qjSubject} (${qjMode})`;
+      setSuccessMsg(succ);
+      toast.success(succ);
       resetQuestionJson();
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || err.message || "Upload failed.");
+      const msg = err.response?.data?.message || err.message || "Upload failed.";
+      setErrorMsg(msg);
+      toast.error(msg);
       setStatus("error");
     }
   };

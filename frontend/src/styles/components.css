@@ -221,7 +221,7 @@
 .form-textarea:focus {
   outline: none;
   border-color: var(--primary-focus);
-  box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.25);
+  box-shadow: 0 0 0 2px var(--primary-glow, rgba(62, 155, 143, 0.25));
 }
 
 .form-select {

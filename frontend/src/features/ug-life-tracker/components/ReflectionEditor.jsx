@@ -73,13 +73,13 @@ export default function ReflectionEditor({ entry, onChange }) {
                   justifyContent: "center",
                   borderRadius: 8,
                   background: active
-                    ? "rgba(74, 222, 128, 0.12)"
+                    ? "rgba(62, 155, 143, 0.15)"
                     : "transparent",
                   border: active
-                    ? "1px solid #4ade80"
+                    ? "1px solid var(--primary, #3e9b8f)"
                     : "1px solid var(--border)",
                   color: active
-                    ? "#4ade80"
+                    ? "var(--primary, #3e9b8f)"
                     : "var(--muted)",
                   cursor: "pointer",
                   transition: "all 0.15s ease",

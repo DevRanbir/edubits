@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import {BrainCircuit, Layers3, Unlock, CheckCircle2 } from "lucide-react";
-import { GraduationCap, BookOpen } from "lucide-react";
+import { BrainCircuit, Lock, Unlock, Layers3, CheckCircle2, GraduationCap, BookOpen, ArrowRight } from "lucide-react";
+import GradientASCII from "../../../components/ui/GradientASCII";
 import "./TopicsPage.css";
 
 export default function TopicsPage() {
@@ -146,31 +146,64 @@ function TopicPhotoCard({ topic, onStart, style }) {
       style={style}
       onClick={() => !isLocked && onStart(topic)}
     >
-      <div className="photo-card-image">
-        {topic.image ? (
-          <img src={topic.image} alt={topic.name} loading="lazy" />
-        ) : (
-          <div className="photo-placeholder">
-            <span className="photo-icon">{topic.icon || "📚"}</span>
-          </div>
-        )}
-        {isLocked && <div className="photo-lock"><Unlock size={24} /></div>}
-        {isCompleted && <div className="photo-check"><CheckCircle2 size={24} /></div>}
+      {/* 1. Image as Full Card Background (Quiz cards only) */}
+      {topic.image ? (
+        <img
+          src={topic.image}
+          alt=""
+          className="quiz-card-bg-img"
+          loading="lazy"
+          aria-hidden="true"
+        />
+      ) : (
+        <div className="photo-placeholder quiz-card-bg-placeholder" aria-hidden="true">
+          <span className="photo-icon">{topic.icon || "📚"}</span>
+        </div>
+      )}
+
+      {/* 2. Atmospheric Dark Overlay for Contrast & Readability */}
+      <div className="quiz-card-bg-overlay" aria-hidden="true" />
+
+      {/* 3. Top to Mid: Gradient ASCII */}
+      <div className="res-card-ascii-wrap quiz-ascii-wrap" aria-hidden="true">
+        <GradientASCII
+          shape="horizon"
+          colors={["#115d62", "#1f7771", "#3e9b8f", "#5cc2b4"]}
+          density={0.65}
+          glow={0.3}
+          flicker={0.1}
+          mouseInteraction={false}
+          intro={false}
+        />
       </div>
-      <div className="photo-card-content">
-        <h3 className="photo-card-title">{topic.name}</h3>
-        <p className="photo-card-desc">{topic.description || "No description"}</p>
-        {!isLocked && (
-          <button className="photo-card-start" onClick={(e) => { e.stopPropagation(); onStart(topic); }}>
-            {isCompleted ? "Retake Quiz" : "Start Quiz"}
-          </button>
-        )}
-        {isLocked && (
-          <div className="photo-card-locked">
-            Complete prerequisites to unlock
-          </div>
-        )}
+
+      {/* 4. Top Header: Title at Top, Description Below That */}
+      <div className="res-card-header quiz-header-layer">
+        <h3 className="res-card-title">{topic.name}</h3>
+        <div className="res-card-desc">
+          {isCompleted ? (
+            <span className="quiz-desc-status completed">
+              <CheckCircle2 size={13} /> Completed
+            </span>
+          ) : isLocked ? (
+            <span className="quiz-desc-status locked">
+              <Lock size={13} /> Locked
+            </span>
+          ) : (
+            <span className="quiz-desc-status active">
+              {topic.description || "Practice Quiz"}
+            </span>
+          )}
+        </div>
       </div>
+
+      {/* 5. Bottom Right: Small Start Now Button (No extra layering) */}
+      {!isLocked && (
+        <span className="quiz-card-start-btn">
+          <span>Start Now</span>
+          <ArrowRight size={12} strokeWidth={2.4} />
+        </span>
+      )}
     </article>
   );
 }

@@ -33,7 +33,7 @@ export default function StatsOverview({ stats }) {
             fontWeight: 700,
             lineHeight: 1,
             marginBottom: 8,
-            color: item.green ? "#4ade80" : "var(--text)",
+            color: item.green ? "var(--primary, #3e9b8f)" : "var(--text)",
           }}>
             {item.value}
           </div>

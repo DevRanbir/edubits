@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/authValue";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "../context/toastValue";
-import { Loader, ArrowRight } from "lucide-react";
+import { Loader, ArrowRight, Sparkles } from "lucide-react";
 import { GoogleIcon, GitHubIcon } from "../features/homepage/BrandIcons";
 import { API_URL } from "../config/api";
 import "./login.css";
@@ -13,7 +13,7 @@ const handleOAuthLogin = (provider) => {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, tempLogin } = useAuth();
   const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
@@ -95,6 +95,10 @@ export default function Login() {
             </button>
           </div>
 
+          <p style={{ fontSize: "11px", color: "var(--text-tertiary, #888)", textAlign: "center", margin: "-4px 0 12px" }}>
+            (OAuth callback redirects to hosted site; use Email / Password or 1-Click Demo on localhost)
+          </p>
+
           <div className="auth-divider">or</div>
 
           <form onSubmit={handleLogin} className="auth-form">
@@ -120,6 +124,27 @@ export default function Login() {
               <label>Password</label>
             </div>
 
+            <div style={{ display: "flex", justifyContent: "flex-end", margin: "-6px 0 10px" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("demo@edubits.io");
+                  setPassword("Password12345!");
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--primary, #6366f1)",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  padding: 0,
+                  textDecoration: "underline",
+                }}
+              >
+                Auto-fill Demo Credentials
+              </button>
+            </div>
+
             <button type="submit" className="btn btn-primary auth-submit-btn" disabled={loading}>
               {loading ? (
                 <span className="btn-loading">
@@ -131,6 +156,44 @@ export default function Login() {
               )}
             </button>
           </form>
+
+          <div style={{ margin: "16px 0 10px", textAlign: "center" }}>
+            <button
+              type="button"
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  const loggedUser = await tempLogin("user");
+                  if (loggedUser) {
+                    showToast(`Logged in as ${loggedUser.name || loggedUser.email}`, "success");
+                    navigate("/resources");
+                  } else {
+                    showToast("Could not complete instant login", "error");
+                  }
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              style={{
+                width: "100%",
+                padding: "10px 16px",
+                borderRadius: "8px",
+                border: "1px dashed rgba(62, 155, 143, 0.6)",
+                background: "rgba(62, 155, 143, 0.08)",
+                color: "var(--primary, #3e9b8f)",
+                fontWeight: 600,
+                fontSize: "13.5px",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <Sparkles size={16} /> Instant 1-Click Login (Live Demo Account)
+            </button>
+          </div>
 
           <p className="auth-footer">
             New to Edubits?

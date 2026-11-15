@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { X, Download, Maximize2, Minimize2 } from "lucide-react";
+import { X, Download } from "lucide-react";
 import "./PdfViewer.css";
 
 const getAttachmentUrl = (sourceUrl) =>
@@ -15,7 +15,6 @@ export default function PdfViewer({
   linkedUrl,
 }) {
   const [error, setError] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleDownload = useCallback(() => {
     const a = document.createElement("a");
@@ -24,7 +23,6 @@ export default function PdfViewer({
     a.click();
   }, [url, title]);
 
-  // Hooks must run on every render, so this sits above the early return.
   useEffect(() => {
     if (!isOpen) return undefined;
 
@@ -42,38 +40,62 @@ export default function PdfViewer({
 
   if (!isOpen) return null;
 
+  const displayTitle = (title || "Document")
+    .replace(/\s*\(?(Questions|Solution)\)?/gi, "")
+    .trim();
+
   return (
-    <div className={`pdf-viewer-overlay ${isFullscreen ? "fullscreen" : ""}`} onClick={onClose}>
+    <div className="pdf-viewer-overlay" onClick={onClose}>
       <div className="pdf-viewer-panel" onClick={(e) => e.stopPropagation()}>
         <div className="pdf-viewer-header">
           <div className="pdf-viewer-title">
-            <span>{title}</span>
-            {variant && (
-              <span className={`pdf-variant-badge ${variant}`}>{variant}</span>
-            )}
+            <span>{displayTitle}</span>
           </div>
-          <div className="pdf-viewer-actions">
-            {linkedUrl && onToggleVariant && (
+
+          {/* Segmented Tab Bar showing BOTH Questions and Solution */}
+          {variant && (
+            <div className="pdf-variant-tabbar">
               <button
-                className="pdf-action-btn"
-                onClick={onToggleVariant}
-                title={`Switch to ${variant === "questions" ? "solution" : "questions"}`}
+                type="button"
+                className={`pdf-variant-tab ${variant === "questions" ? "active" : ""}`}
+                onClick={() => {
+                  if (variant !== "questions" && onToggleVariant) onToggleVariant();
+                }}
               >
-                🔄 {variant === "questions" ? "Solution" : "Questions"}
+                Questions
               </button>
-            )}
-            <button className="pdf-action-btn" onClick={handleDownload} title="Download">
-              <Download size={16} />
-            </button>
+              <button
+                type="button"
+                className={`pdf-variant-tab ${variant === "solution" ? "active" : ""}`}
+                onClick={() => {
+                  if (variant !== "solution" && onToggleVariant) onToggleVariant();
+                }}
+                disabled={variant !== "solution" && !linkedUrl}
+                title={
+                  variant === "solution" || linkedUrl
+                    ? "View Solution"
+                    : "Solution not uploaded"
+                }
+              >
+                Solution
+              </button>
+            </div>
+          )}
+
+          <div className="pdf-viewer-actions">
             <button
               className="pdf-action-btn"
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+              onClick={handleDownload}
+              title="Download PDF"
             >
-              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              <Download size={15} />
             </button>
-            <button className="pdf-action-btn pdf-close-btn" onClick={onClose} title="Close">
-              <X size={18} />
+            <button
+              className="pdf-action-btn pdf-close-btn"
+              onClick={onClose}
+              title="Close (Esc)"
+            >
+              <X size={17} />
             </button>
           </div>
         </div>
@@ -81,7 +103,9 @@ export default function PdfViewer({
         {error && (
           <div className="pdf-viewer-error">
             <p>Failed to load PDF: {error}</p>
-            <button type="button" onClick={() => setError(null)}>Retry</button>
+            <button type="button" onClick={() => setError(null)}>
+              Retry
+            </button>
             <a href={getAttachmentUrl(url)} download={`${title || "document"}.pdf`}>
               Download PDF
             </a>
@@ -92,7 +116,7 @@ export default function PdfViewer({
           <div className="pdf-viewer-content">
             <iframe
               key={url}
-              title={`${title || "PDF"} preview`}
+              title={`${displayTitle} preview`}
               src={url}
               className="pdf-viewer-frame"
               onError={() => setError("The browser could not display this PDF.")}

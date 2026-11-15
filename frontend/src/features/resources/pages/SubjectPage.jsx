@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Layers,
   FileText,
@@ -7,30 +8,71 @@ import {
   FileQuestion,
   Loader2,
   AlertCircle,
-  ArrowLeft,
   CheckSquare,
   Square,
   ExternalLink,
   Download,
   Eye,
+  Sidebar,
+  ChevronLeft,
+  Search,
+  Check,
+  X,
+  Sparkles,
+  Play,
 } from "lucide-react";
 import { fetchResources } from "../../../services/resourceService";
 import { useResourcesProgress } from "../resourcesProgressContext";
 import PdfViewer from "../components/PdfViewer";
+import MagneticMorphingNav from "../../../components/layout/MagneticMorphingNav";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "../../../components/ui/Breadcrumb";
+import "../../tool-deck/toolDeck.css";
+import "./SubjectWorkspace.css";
 import "./Resources.css";
+import { recordRecentActivity } from "../../../utils/recentActivity";
 
-const TABS = [
-  { id: "pyqs", label: "PYQs", icon: FileQuestion },
-  { id: "playlists", label: "Playlists", icon: ListVideo },
-  { id: "notes", label: "Notes", icon: FileText },
-];
+const MotionDiv = motion.div;
 
-const getAttachmentUrl = (url) => url?.replace("/upload/", "/upload/fl_attachment/") || url;
+const SLOTS = ["MST 1", "IMP MST 1", "MST 2", "IMP MST 2", "EST", "IMP EST"];
+
+const getAttachmentUrl = (url) =>
+  url?.replace("/upload/", "/upload/fl_attachment/") || url;
+
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const listId = parsed.searchParams.get("list");
+    if (listId) {
+      return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(listId)}`;
+    }
+    const vId = parsed.searchParams.get("v");
+    if (vId) {
+      return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(vId)}`;
+    }
+    if (parsed.hostname.includes("youtu.be")) {
+      const vIdPath = parsed.pathname.slice(1);
+      if (vIdPath) {
+        return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(vIdPath)}`;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 export default function SubjectPage() {
   const { year, subject } = useParams();
-  const decodedYear = decodeURIComponent(year);
-  const decodedSubject = decodeURIComponent(subject);
+  const decodedYear = decodeURIComponent(year || "");
+  const decodedSubject = decodeURIComponent(subject || "");
   const { progressMap, saveProgress } = useResourcesProgress();
 
   const [activeTab, setActiveTab] = useState("pyqs");
@@ -40,17 +82,32 @@ export default function SubjectPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Viewer state
-  const [viewer, setViewer] = useState({ open: false, url: "", title: "", variant: "", linkedUrl: "" });
+  // Workspace & Explorer state (1:1 with AI site Notes UI)
+  const [isExplorerOpen, setIsExplorerOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [openFiles, setOpenFiles] = useState([]);
+  const [activeFile, setActiveFile] = useState(null);
+
+  // Modal Fullscreen PdfViewer state
+  const [viewer, setViewer] = useState({
+    open: false,
+    url: "",
+    title: "",
+    variant: "",
+    linkedUrl: "",
+  });
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const resources = await fetchResources({ year: decodedYear, subject: decodedSubject });
-      setPyqs(resources.filter((resource) => resource.resourceType === "pyqs"));
-      setPlaylists(resources.filter((resource) => resource.resourceType === "playlist"));
-      setNotes(resources.filter((resource) => resource.resourceType === "notes"));
+      const resources = await fetchResources({
+        year: decodedYear,
+        subject: decodedSubject,
+      });
+      setPyqs(resources.filter((r) => r.resourceType === "pyqs"));
+      setPlaylists(resources.filter((r) => r.resourceType === "playlist"));
+      setNotes(resources.filter((r) => r.resourceType === "notes"));
     } catch {
       setError("Failed to load resources. Please try again.");
     } finally {
@@ -60,7 +117,109 @@ export default function SubjectPage() {
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+    if (decodedSubject && decodedYear) {
+      recordRecentActivity({
+        id: `subject-${decodedSubject}`,
+        type: "resource",
+        title: decodedSubject,
+        subtitle: `${decodedYear} • PYQs & Notes`,
+        href: `/resources/${encodeURIComponent(decodedYear)}/${encodeURIComponent(decodedSubject)}`,
+        icon: "Layers",
+      });
+    }
+  }, [loadData, decodedSubject, decodedYear]);
+
+  // Group PYQs into the 6 standard slots
+  const paperPairs = useMemo(() => {
+    const pairs = {};
+    pyqs.forEach((p) => {
+      if (!pairs[p.paperKey]) pairs[p.paperKey] = {};
+      pairs[p.paperKey][p.variant] = p;
+    });
+
+    const normalizeTag = (value) =>
+      String(value || "")
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "")
+        .replace(/^IMPORTANT/, "IMP");
+
+    const bySlot = new Map();
+    Object.entries(pairs).forEach(([paperKey, variants]) => {
+      if (!variants.questions) return;
+      const normalizedTag = normalizeTag(
+        variants.questions.paperTag || variants.questions.title
+      );
+      const slot = SLOTS.find(
+        (candidate) => normalizeTag(candidate) === normalizedTag
+      );
+      const existing = bySlot.get(slot);
+      const uploadedAt = new Date(variants.questions.createdAt || 0).getTime();
+      const existingAt = new Date(existing?.questions?.createdAt || 0).getTime();
+      if (slot && (!existing || uploadedAt >= existingAt)) {
+        bySlot.set(slot, {
+          paperKey,
+          questions: variants.questions,
+          solution: variants.solution,
+        });
+      }
+    });
+
+    return SLOTS.map((slot) => ({ slot, ...(bySlot.get(slot) || {}) }));
+  }, [pyqs]);
+
+  // Sorted and filtered playlists
+  const sortedPlaylists = useMemo(() => {
+    return playlists
+      .filter(
+        (pl) =>
+          !(
+            decodedSubject === "Computer Networks" &&
+            (pl.title || "").trim().toLowerCase() === "cn unit 1"
+          )
+      )
+      .sort((a, b) => {
+        const getUnit = (title) =>
+          Number(title.match(/\bunit\s*(\d+)\b/i)?.[1] || Infinity);
+        return getUnit(a.title || "") - getUnit(b.title || "");
+      });
+  }, [playlists, decodedSubject]);
+
+  // Initial tab selection once data arrives
+  const initialOpenDoneRef = useRef(false);
+  useEffect(() => {
+    if (loading || initialOpenDoneRef.current) return;
+    initialOpenDoneRef.current = true;
+
+    // Default: find first slot with questions, or fallback to first slot
+    const firstUploaded = paperPairs.find((p) => p.questions);
+    const initialSlot = firstUploaded || paperPairs[0];
+    if (initialSlot) {
+      const initialItem = {
+        id: `pyq-${initialSlot.slot}`,
+        type: "pyq",
+        slot: initialSlot.slot,
+        title: initialSlot.slot,
+        paperKey: initialSlot.paperKey,
+        questions: initialSlot.questions,
+        solution: initialSlot.solution,
+        activeVariant: "questions",
+      };
+      setOpenFiles([initialItem]);
+      setActiveFile(initialItem);
+    }
+  }, [loading, paperPairs]);
+
+  // Keyboard shortcut Ctrl+B / Cmd+B for explorer sidebar toggle
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setIsExplorerOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handleAttemptedToggle = async (paperKey, current) => {
     const next = !current;
@@ -71,253 +230,797 @@ export default function SubjectPage() {
     }
   };
 
-  const openViewer = (resource, linkedResource) => {
+  const openViewer = (resource, linkedResource, customTitle) => {
     setViewer({
       open: true,
       url: resource.url,
-      title: resource.title,
+      title: customTitle || resource.title,
       variant: resource.variant,
       linkedUrl: linkedResource?.url || "",
     });
   };
 
-  const closeViewer = () => setViewer({ open: false, url: "", title: "", variant: "", linkedUrl: "" });
+  const closeViewer = () =>
+    setViewer({ open: false, url: "", title: "", variant: "", linkedUrl: "" });
 
   const toggleVariant = () => {
     if (viewer.linkedUrl) {
       setViewer((v) => ({
         ...v,
         url: v.linkedUrl,
-        title: v.variant === "questions" ? v.title.replace(" (Solution)", "") + " (Solution)" : v.title.replace(" (Solution)", ""),
+        title:
+          v.variant === "questions"
+            ? v.title.replace(" (Solution)", "") + " (Solution)"
+            : v.title.replace(" (Solution)", ""),
         variant: v.variant === "questions" ? "solution" : "questions",
         linkedUrl: v.url,
       }));
     }
   };
 
-  // Group PYQs by paperKey
-  const paperPairs = useMemo(() => {
-    const pairs = {};
-    pyqs.forEach((p) => {
-      if (!pairs[p.paperKey]) pairs[p.paperKey] = {};
-      pairs[p.paperKey][p.variant] = p;
-    });
-    const slots = ["MST 1", "IMP MST 1", "MST 2", "IMP MST 2", "EST", "IMP EST"];
-    const normalizeTag = (value) => String(value || "")
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, "")
-      .replace(/^IMPORTANT/, "IMP");
-    const bySlot = new Map();
-    Object.entries(pairs).forEach(([paperKey, variants]) => {
-      if (!variants.questions) return;
-      const normalizedTag = normalizeTag(variants.questions.paperTag || variants.questions.title);
-      const slot = slots.find((candidate) => normalizeTag(candidate) === normalizedTag);
-      const existing = bySlot.get(slot);
-      const uploadedAt = new Date(variants.questions.createdAt || 0).getTime();
-      const existingAt = new Date(existing?.questions?.createdAt || 0).getTime();
-      if (slot && (!existing || uploadedAt >= existingAt)) bySlot.set(slot, {
-        paperKey,
-        questions: variants.questions,
-        solution: variants.solution,
-      });
-    });
-    return slots.map((slot) => ({ slot, ...(bySlot.get(slot) || {}) }));
-  }, [pyqs]);
+  // Open item in workspace tab strip
+  const handleOpenFile = (item) => {
+    const existing = openFiles.find((f) => f.id === item.id);
+    if (!existing) {
+      setOpenFiles((prev) => [...prev, item]);
+    }
+    setActiveFile(item);
 
-  if (loading) return <div className="resources-loading"><Loader2 className="spin" size={32} /> Loading resources…</div>;
-  if (error) return <div className="resources-error"><AlertCircle size={32} /> {error} <button onClick={loadData}>Retry</button></div>;
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setIsExplorerOpen(false);
+    }
+  };
 
-  const renderPyqsTab = () => (
-    <div className="resources-tab-content">
-      <div className="paper-pairs-grid">
-        {paperPairs.map(({ slot, paperKey, questions, solution }) => {
-            const progress = progressMap[paperKey] || { attempted: false };
-            return (
-              <div key={slot} className={`paper-pair-card ${questions ? "" : "paper-pair-card-empty"}`}>
-                <div className="paper-pair-header">
-                  <h4 className="paper-pair-title">{slot}</h4>
-                  <span className={`paper-tag ${progress.attempted ? "attempted" : ""}`}>
-                    {questions ? (questions.paperTag || slot) : "Not uploaded"}
-                    {progress.attempted && <CheckSquare size={14} />}
-                  </span>
-                </div>
+  // Close item tab
+  const handleCloseFile = (e, fileId) => {
+    e.stopPropagation();
+    const remaining = openFiles.filter((f) => f.id !== fileId);
+    setOpenFiles(remaining);
+    if (activeFile?.id === fileId) {
+      setActiveFile(remaining.length > 0 ? remaining[remaining.length - 1] : null);
+    }
+  };
 
-                {questions ? <>
-                <div className="paper-pair-pdfs">
-                  <div className="pdf-card questions-card">
-                    <div className="pdf-card-badge questions">Questions</div>
-                    <button
-                      className="pdf-card-preview"
-                      onClick={() => openViewer(questions, solution)}
-                      disabled={!questions?.url}
-                    >
-                      <FileQuestion size={32} />
-                      <span>Open Questions</span>
-                    </button>
-                    {questions?.url && (
-                      <a href={getAttachmentUrl(questions.url)} download className="pdf-card-external" aria-label="Download questions PDF" title="Download questions PDF">
-                        <Download size={14} />
-                      </a>
-                    )}
-                  </div>
+  // Switch PYQ variant between questions and solution
+  const handleVariantSwitch = (variant) => {
+    if (!activeFile || activeFile.type !== "pyq") return;
+    const updated = {
+      ...activeFile,
+      activeVariant: variant,
+    };
+    setActiveFile(updated);
+    setOpenFiles((prev) => prev.map((f) => (f.id === updated.id ? updated : f)));
+  };
 
-                  {solution && (
-                    <div className="pdf-card solution-card">
-                      <div className="pdf-card-badge solution">Solution</div>
-                      <button
-                        className="pdf-card-preview"
-                        onClick={() => openViewer(solution, questions)}
-                        disabled={!solution?.url}
-                      >
-                        <FileQuestion size={32} />
-                        <span>Open Solution</span>
-                      </button>
-                      <a href={getAttachmentUrl(solution.url)} download className="pdf-card-external" aria-label="Download solution PDF" title="Download solution PDF">
-                        <Download size={14} />
-                      </a>
-                    </div>
-                  )}
-                </div>
+  // Navigation tabs for MagneticMorphingNav
+  const uploadedPyqsCount = useMemo(
+    () => paperPairs.filter((p) => p.questions).length,
+    [paperPairs]
+  );
+  const navTabs = [
+    {
+      id: "pyqs",
+      label: "PYQs",
+      icon: <FileQuestion size={15} />,
+      count: uploadedPyqsCount,
+    },
+    {
+      id: "playlists",
+      label: "Playlists",
+      icon: <ListVideo size={15} />,
+      count: sortedPlaylists.length,
+    },
+    {
+      id: "notes",
+      label: "Notes",
+      icon: <FileText size={15} />,
+      count: notes.length,
+    },
+  ];
 
-                <div className="paper-pair-actions">
-                  <button
-                    className={`attempt-btn ${progress.attempted ? "done" : ""}`}
-                    onClick={() => handleAttemptedToggle(paperKey, progress.attempted)}
-                  >
-                    {progress.attempted ? <CheckSquare size={16} /> : <Square size={16} />}
-                    <span>{progress.attempted ? "Attempted" : "Mark Attempted"}</span>
-                  </button>
-                </div>
+  // Filtering Explorer Items based on Search Query
+  const filteredPaperPairs = useMemo(() => {
+    if (!searchQuery.trim()) return paperPairs;
+    const q = searchQuery.toLowerCase();
+    return paperPairs.filter(
+      (p) =>
+        p.slot.toLowerCase().includes(q) ||
+        p.questions?.title?.toLowerCase().includes(q) ||
+        p.questions?.paperTag?.toLowerCase().includes(q)
+    );
+  }, [paperPairs, searchQuery]);
 
-                </> : <div className="paper-slot-empty">Upload this paper from the admin dashboard.</div>}
-              </div>
-            );
-        })}
+  const filteredPlaylists = useMemo(() => {
+    if (!searchQuery.trim()) return sortedPlaylists;
+    const q = searchQuery.toLowerCase();
+    return sortedPlaylists.filter(
+      (pl) =>
+        pl.title?.toLowerCase().includes(q) ||
+        pl.description?.toLowerCase().includes(q)
+    );
+  }, [sortedPlaylists, searchQuery]);
+
+  const filteredNotes = useMemo(() => {
+    if (!searchQuery.trim()) return notes;
+    const q = searchQuery.toLowerCase();
+    return notes.filter(
+      (n) =>
+        n.title?.toLowerCase().includes(q) ||
+        n.description?.toLowerCase().includes(q)
+    );
+  }, [notes, searchQuery]);
+
+  if (loading) {
+    return (
+      <div className="resources-loading">
+        <Loader2 className="spin" size={32} /> Loading resources…
       </div>
-    </div>
-  );
-
-  const renderPlaylistsTab = () => (
-    <div className="resources-tab-content">
-      {playlists.length === 0 ? (
-        <div className="resources-empty">
-          <ListVideo size={48} />
-          <p>No playlists found for this subject</p>
-        </div>
-      ) : (
-        <div className="playlists-grid">
-          {playlists
-            .filter((playlist) => !(
-              decodedSubject === "Computer Networks" &&
-              (playlist.title || "").trim().toLowerCase() === "cn unit 1"
-            ))
-            .sort((a, b) => {
-            const getUnit = (title) => Number(title.match(/\bunit\s*(\d+)\b/i)?.[1] || Infinity);
-            return getUnit(a.title || "") - getUnit(b.title || "");
-            })
-            .map((pl) => (
-            <div key={pl._id} className="playlist-card">
-              <div className="playlist-thumb">
-                {extractPlaylistId(pl.url) ? (
-                  <iframe
-                    src={`https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(extractPlaylistId(pl.url))}`}
-                    title={`${pl.title} preview`}
-                    loading="lazy"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                  />
-                ) : <ListVideo size={36} aria-hidden="true" />}
-              </div>
-              <div className="playlist-info">
-                <h4>{pl.title}</h4>
-                <p>{pl.description || "Playlist"}</p>
-                <a href={pl.url} target="_blank" rel="noopener noreferrer" className="playlist-link">
-                  <ExternalLink size={14} /> Open on YouTube
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
-  const renderNotesTab = () => (
-    <div className="resources-tab-content">
-      {notes.length === 0 ? (
-        <div className="resources-empty">
-          <FileText size={48} />
-          <p>No notes found for this subject</p>
-        </div>
-      ) : (
-        <div className="notes-list">
-          {notes.map((note) => (
-            <div key={note._id} className="note-card">
-              <h4>{note.title}</h4>
-              <p>{note.description || ""}</p>
-              <button type="button" className="note-link" onClick={() => openViewer(note, null)}>
-                <Eye size={14} /> View PDF
-              </button>
-              <a href={getAttachmentUrl(note.url)} download className="note-link">
-                <Download size={14} /> Download PDF
-              </a>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
-  function extractPlaylistId(url) {
-    try {
-      const parsed = new URL(url);
-      return parsed.searchParams.get("list") || "";
-    } catch { return ""; }
+    );
   }
 
-  return (
-    <div className="resources-page subject-page">
-      <header className="resources-header subject-page-header">
-        <div className="header-content">
-          <h1>
-            <Layers size={28} />
-            {decodedSubject}
-          </h1>
-          <span className="year-badge">{decodedYear}</span>
-        </div>
+  if (error) {
+    return (
+      <div className="resources-error">
+        <AlertCircle size={32} /> {error}{" "}
+        <button onClick={loadData}>Retry</button>
+      </div>
+    );
+  }
 
-        <Link
-          to={`/resources/${encodeURIComponent(decodedYear)}`}
-          className="back-link"
-        >
-          <ArrowLeft size={16} />
-          Back
-        </Link>
+  // Active PYQ helpers
+  const activePyqProgress =
+    activeFile?.type === "pyq" && activeFile.paperKey
+      ? progressMap[activeFile.paperKey] || { attempted: false }
+      : { attempted: false };
+
+  const activePdfUrl =
+    activeFile?.type === "pyq"
+      ? activeFile.activeVariant === "solution" && activeFile.solution
+        ? activeFile.solution.url
+        : activeFile.questions?.url
+      : activeFile?.type === "note"
+      ? activeFile.url
+      : null;
+
+  const activePdfTitle =
+    activeFile?.type === "pyq"
+      ? `${activeFile.slot} (${activeFile.activeVariant === "solution" ? "Solution" : "Questions"})`
+      : activeFile?.title || "Document";
+
+  return (
+    <div className="subject-workspace-page">
+      {/* Top Header & Breadcrumb */}
+      <header className="subject-workspace-header">
+        <Breadcrumb className="res-breadcrumb-wrap">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink to="/resources?all=true">Resources</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink to={`/resources/${encodeURIComponent(decodedYear)}`}>
+                {decodedYear}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{decodedSubject}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
+        <div className="subject-workspace-bar">
+          <div className="subject-workspace-title-wrap">
+            <h1 className="subject-workspace-heading">{decodedSubject}</h1>
+          </div>
+
+          <div className="subject-nav-wrapper">
+            <MagneticMorphingNav
+              activeTab={activeTab}
+              onTabChange={(tabId) => {
+                setActiveTab(tabId);
+                if (tabId === "playlists" && sortedPlaylists.length > 0) {
+                  const currentIsPlaylist = activeFile?.type === "playlist";
+                  if (!currentIsPlaylist) {
+                    const firstPl = sortedPlaylists[0];
+                    handleOpenFile({
+                      id: `playlist-${firstPl._id}`,
+                      type: "playlist",
+                      title: firstPl.title,
+                      description: firstPl.description,
+                      url: firstPl.url,
+                      raw: firstPl,
+                    });
+                  }
+                } else if (tabId === "pyqs") {
+                  const currentIsPyq = activeFile?.type === "pyq";
+                  if (!currentIsPyq) {
+                    const firstUploaded = paperPairs.find((p) => p.questions) || paperPairs[0];
+                    if (firstUploaded) {
+                      handleOpenFile({
+                        id: `pyq-${firstUploaded.slot}`,
+                        type: "pyq",
+                        slot: firstUploaded.slot,
+                        title: firstUploaded.slot,
+                        paperKey: firstUploaded.paperKey,
+                        questions: firstUploaded.questions,
+                        solution: firstUploaded.solution,
+                        activeVariant: "questions",
+                      });
+                    }
+                  }
+                } else if (tabId === "notes" && notes.length > 0) {
+                  const currentIsNote = activeFile?.type === "note";
+                  if (!currentIsNote) {
+                    const firstNote = notes[0];
+                    handleOpenFile({
+                      id: `note-${firstNote._id}`,
+                      type: "note",
+                      title: firstNote.title,
+                      description: firstNote.description,
+                      url: firstNote.url,
+                      raw: firstNote,
+                    });
+                  }
+                }
+              }}
+              tabs={navTabs}
+            />
+          </div>
+        </div>
       </header>
 
+      {/* Main Workspace Frame (AI Site Notes UI Exact Style) */}
+      <div className="tooldeck-workspace-frame">
+        {/* --- LEFT SIDEBAR (EXPLORER) --- */}
+        <AnimatePresence initial={false}>
+          {isExplorerOpen && (
+            <MotionDiv
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 290, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="tooldeck-explorer-panel"
+            >
+              <div className="tooldeck-explorer-head">
+                <span className="tooldeck-explorer-title">EXPLORER</span>
+                <button
+                  type="button"
+                  onClick={() => setIsExplorerOpen(false)}
+                  className="tooldeck-explorer-close-btn"
+                  title="Collapse Explorer (Ctrl+B)"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+              </div>
 
-      <div className="resources-tabs" role="tablist">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            <tab.icon size={18} />
-            <span>{tab.label}</span>
-          </button>
-        ))}
+              <div className="tooldeck-explorer-search">
+                <div className="tooldeck-explorer-search-input-wrap">
+                  <Search size={14} className="tooldeck-explorer-search-icon" />
+                  <input
+                    type="text"
+                    placeholder={`Search ${activeTab}...`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="tooldeck-explorer-search-input"
+                  />
+                </div>
+              </div>
+
+              {/* Explorer File List based on Active Tab */}
+              <div className="tooldeck-explorer-files">
+                {activeTab === "pyqs" &&
+                  (filteredPaperPairs.length === 0 ? (
+                    <div className="tooldeck-explorer-empty">
+                      No paper slots matching "{searchQuery}"
+                    </div>
+                  ) : (
+                    filteredPaperPairs.map(({ slot, paperKey, questions, solution }) => {
+                      const fileId = `pyq-${slot}`;
+                      const isActive = activeFile?.id === fileId;
+                      const isAttempted = progressMap[paperKey]?.attempted;
+
+                      return (
+                        <div
+                          key={slot}
+                          onClick={() =>
+                            handleOpenFile({
+                              id: fileId,
+                              type: "pyq",
+                              slot,
+                              title: slot,
+                              paperKey,
+                              questions,
+                              solution,
+                              activeVariant: "questions",
+                            })
+                          }
+                          className={`tooldeck-explorer-item ${isActive ? "active" : ""}`}
+                          title={`${slot} ${questions ? "(Uploaded)" : "(Empty)"}`}
+                        >
+                          <FileQuestion
+                            size={16}
+                            className={`tooldeck-explorer-item-icon ${
+                              isAttempted ? "text-green-400" : ""
+                            }`}
+                          />
+                          <div className="tooldeck-explorer-item-info">
+                            <span className="tooldeck-explorer-item-name">{slot}</span>
+                            <span className="tooldeck-explorer-item-meta">
+                              {questions
+                                ? solution
+                                  ? "Questions • Solution"
+                                  : "Questions"
+                                : "Not uploaded"}
+                            </span>
+                          </div>
+                          {isAttempted ? (
+                            <span className="tooldeck-explorer-item-badge attempted">
+                              ✓ Done
+                            </span>
+                          ) : questions ? (
+                            <span className="tooldeck-explorer-item-badge available">
+                              PDF
+                            </span>
+                          ) : (
+                            <span className="tooldeck-explorer-item-badge empty">
+                              Empty
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })
+                  ))}
+
+                {activeTab === "playlists" &&
+                  (filteredPlaylists.length === 0 ? (
+                    <div className="tooldeck-explorer-empty">
+                      No playlists found for this subject
+                    </div>
+                  ) : (
+                    filteredPlaylists.map((pl) => {
+                      const fileId = `playlist-${pl._id}`;
+                      const isActive = activeFile?.id === fileId;
+
+                      return (
+                        <div
+                          key={pl._id}
+                          onClick={() =>
+                            handleOpenFile({
+                              id: fileId,
+                              type: "playlist",
+                              title: pl.title,
+                              description: pl.description,
+                              url: pl.url,
+                              raw: pl,
+                            })
+                          }
+                          className={`tooldeck-explorer-item ${isActive ? "active" : ""}`}
+                          title={pl.title}
+                        >
+                          <ListVideo size={16} className="tooldeck-explorer-item-icon" />
+                          <div className="tooldeck-explorer-item-info">
+                            <span className="tooldeck-explorer-item-name">
+                              {pl.title}
+                            </span>
+                            <span className="tooldeck-explorer-item-meta">
+                              {pl.description || "Video playlist"}
+                            </span>
+                          </div>
+                          <Play size={12} className="opacity-60 shrink-0" />
+                        </div>
+                      );
+                    })
+                  ))}
+
+                {activeTab === "notes" &&
+                  (filteredNotes.length === 0 ? (
+                    <div className="tooldeck-explorer-empty">
+                      No notes found for this subject
+                    </div>
+                  ) : (
+                    filteredNotes.map((note) => {
+                      const fileId = `note-${note._id}`;
+                      const isActive = activeFile?.id === fileId;
+
+                      return (
+                        <div
+                          key={note._id}
+                          onClick={() =>
+                            handleOpenFile({
+                              id: fileId,
+                              type: "note",
+                              title: note.title,
+                              description: note.description,
+                              url: note.url,
+                              raw: note,
+                            })
+                          }
+                          className={`tooldeck-explorer-item ${isActive ? "active" : ""}`}
+                          title={note.title}
+                        >
+                          <FileText size={16} className="tooldeck-explorer-item-icon" />
+                          <div className="tooldeck-explorer-item-info">
+                            <span className="tooldeck-explorer-item-name">
+                              {note.title}
+                            </span>
+                            <span className="tooldeck-explorer-item-meta">
+                              {note.description || "PDF Notes"}
+                            </span>
+                          </div>
+                          <span className="tooldeck-explorer-item-badge available">
+                            PDF
+                          </span>
+                        </div>
+                      );
+                    })
+                  ))}
+              </div>
+            </MotionDiv>
+          )}
+        </AnimatePresence>
+
+        {/* --- RIGHT: EDITOR / WORKSPACE STAGE --- */}
+        <div className="tooldeck-editor-panel">
+          {/* Header Tab Strip */}
+          <div className="tooldeck-editor-header">
+            {!isExplorerOpen && (
+              <button
+                type="button"
+                onClick={() => setIsExplorerOpen(true)}
+                className="tooldeck-editor-toggle-btn"
+                title="Show Explorer (Ctrl+B)"
+              >
+                <Sidebar size={17} />
+              </button>
+            )}
+
+            {/* Tab Strip */}
+            <div className="tooldeck-tabs-strip">
+              {openFiles.length === 0 ? (
+                <span className="tooldeck-no-tabs-hint">No open files</span>
+              ) : (
+                openFiles.map((file) => {
+                  const isTabActive = activeFile?.id === file.id;
+                  const IconComponent =
+                    file.type === "pyq"
+                      ? FileQuestion
+                      : file.type === "playlist"
+                      ? ListVideo
+                      : FileText;
+
+                  return (
+                    <div
+                      key={file.id}
+                      onClick={() => setActiveFile(file)}
+                      className={`tooldeck-tab ${isTabActive ? "active" : ""}`}
+                      title={file.title}
+                    >
+                      <IconComponent
+                        size={13}
+                        className={`tooldeck-tab-icon ${isTabActive ? "active" : ""}`}
+                      />
+                      <span className="tooldeck-tab-title">{file.title}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleCloseFile(e, file.id)}
+                        className="tooldeck-tab-close"
+                        title="Close tab"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Sub Toolbar (When Active File Exists) */}
+          {activeFile && (
+            <div className="tooldeck-workspace-toolbar">
+              <div className="tooldeck-toolbar-left">
+                {activeFile.type === "pyq" && activeFile.paperKey && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleAttemptedToggle(
+                        activeFile.paperKey,
+                        activePyqProgress.attempted
+                      )
+                    }
+                    className={`subject-attempt-toggle-btn ${
+                      activePyqProgress.attempted ? "done" : ""
+                    }`}
+                  >
+                    {activePyqProgress.attempted ? (
+                      <CheckSquare size={13} className="text-green-400" />
+                    ) : (
+                      <Square size={13} />
+                    )}
+                    <span>
+                      {activePyqProgress.attempted ? "Attempted" : "Mark Attempted"}
+                    </span>
+                  </button>
+                )}
+              </div>
+
+              {/* Center: Questions / Solution toggle */}
+              <div className="tooldeck-toolbar-center">
+                {activeFile.type === "pyq" && (
+                  <div className="subject-variant-group">
+                    <button
+                      type="button"
+                      onClick={() => handleVariantSwitch("questions")}
+                      className={`subject-variant-btn ${
+                        activeFile.activeVariant === "questions" ? "active" : ""
+                      }`}
+                      disabled={!activeFile.questions}
+                    >
+                      Questions
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleVariantSwitch("solution")}
+                      className={`subject-variant-btn ${
+                        activeFile.activeVariant === "solution" ? "active" : ""
+                      }`}
+                      disabled={!activeFile.solution}
+                      title={
+                        activeFile.solution
+                          ? "View Solution"
+                          : "Solution not uploaded yet"
+                      }
+                    >
+                      Solution
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="tooldeck-toolbar-right">
+                {/* Download PDF button if active file has PDF url */}
+                {activePdfUrl && (
+                  <a
+                    href={getAttachmentUrl(activePdfUrl)}
+                    download
+                    className="tooldeck-toolbar-btn"
+                    title="Download PDF document"
+                  >
+                    <Download size={13} />
+                    <span>Download</span>
+                  </a>
+                )}
+
+                {/* Fullscreen Modal View for PDFs */}
+                {activePdfUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (activeFile.type === "pyq") {
+                        const targetResource =
+                          activeFile.activeVariant === "solution"
+                            ? activeFile.solution
+                            : activeFile.questions;
+                        const linked =
+                          activeFile.activeVariant === "solution"
+                            ? activeFile.questions
+                            : activeFile.solution;
+                        if (targetResource) openViewer(targetResource, linked, activeFile.slot);
+                      } else if (activeFile.type === "note") {
+                        openViewer(activeFile, null, activeFile.title);
+                      }
+                    }}
+                    className="tooldeck-toolbar-btn primary"
+                    title="Open Fullscreen Reader"
+                  >
+                    <Eye size={13} />
+                    <span>Fullscreen</span>
+                  </button>
+                )}
+
+                {/* External link for Playlists */}
+                {activeFile.type === "playlist" && activeFile.url && (
+                  <a
+                    href={activeFile.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tooldeck-toolbar-btn primary"
+                  >
+                    <ExternalLink size={13} />
+                    <span>Open on YouTube</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Body Stage */}
+          <div className="tooldeck-workspace-body">
+            {/* Case 1: Active PYQ */}
+            {activeFile?.type === "pyq" && (
+              <>
+                {activePdfUrl ? (
+                  <div className="tooldeck-pdf-container">
+                    <iframe
+                      src={`${activePdfUrl}#toolbar=0`}
+                      className="tooldeck-pdf-iframe"
+                      title={activePdfTitle}
+                    />
+                  </div>
+                ) : (
+                  <div className="subject-empty-slot-stage">
+                    <div className="subject-empty-slot-icon">
+                      <FileQuestion size={30} />
+                    </div>
+                    <h3 className="subject-empty-slot-title">
+                      {activeFile.slot} Not Uploaded
+                    </h3>
+                    <p className="subject-empty-slot-desc">
+                      This question paper or solution has not been uploaded yet. You can
+                      upload this paper from the admin dashboard.
+                    </p>
+                    <span className="subject-empty-slot-tag">
+                      Slot: {activeFile.slot}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Case 2: Active Playlist */}
+            {activeFile?.type === "playlist" && (
+              <div className="subject-video-stage">
+                <div className="subject-video-card-frame">
+                  <div className="subject-video-player-wrap">
+                    {getYouTubeEmbedUrl(activeFile.url) ? (
+                      <iframe
+                        src={getYouTubeEmbedUrl(activeFile.url)}
+                        title={`${activeFile.title} player`}
+                        loading="lazy"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-muted">
+                        <ListVideo size={48} className="opacity-40 mb-2" />
+                        <span>Preview not available</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="subject-video-card-info">
+                    <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+                      <h3 className="subject-video-card-title">{activeFile.title}</h3>
+                      <a
+                        href={activeFile.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="subject-video-yt-btn"
+                      >
+                        <ExternalLink size={13} /> Open on YouTube
+                      </a>
+                    </div>
+                    <p className="subject-video-card-desc">
+                      {activeFile.description || "Video playlist and lecture unit."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Case 3: Active Note */}
+            {activeFile?.type === "note" && (
+              <div className="tooldeck-pdf-container">
+                {activeFile.url ? (
+                  <iframe
+                    src={`${activeFile.url}#toolbar=0`}
+                    className="tooldeck-pdf-iframe"
+                    title={activeFile.title}
+                  />
+                ) : (
+                  <div className="tooldeck-text-doc">
+                    <h2 className="tooldeck-text-doc-title">{activeFile.title}</h2>
+                    <p className="tooldeck-text-doc-body">
+                      {activeFile.description || "No preview content available."}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Case 4: No Open Files (Start Screen - AI Site Exact Layout) */}
+            {!activeFile && (
+              <div className="tooldeck-start-screen">
+                <div className="tooldeck-start-icon-wrap">
+                  <Sparkles size={48} />
+                </div>
+                <h2 className="tooldeck-start-title">{decodedSubject} Academic Drive</h2>
+                <div className="tooldeck-start-commands">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("pyqs");
+                      const firstUploaded = paperPairs.find((p) => p.questions) || paperPairs[0];
+                      if (firstUploaded) {
+                        handleOpenFile({
+                          id: `pyq-${firstUploaded.slot}`,
+                          type: "pyq",
+                          slot: firstUploaded.slot,
+                          title: firstUploaded.slot,
+                          paperKey: firstUploaded.paperKey,
+                          questions: firstUploaded.questions,
+                          solution: firstUploaded.solution,
+                          activeVariant: "questions",
+                        });
+                      }
+                    }}
+                    className="tooldeck-start-cmd-row"
+                  >
+                    <div className="tooldeck-start-cmd-left">
+                      <FileQuestion size={16} />
+                      <span>Open Question Papers</span>
+                    </div>
+                    <span className="tooldeck-start-kbd">PYQ</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("playlists");
+                      if (sortedPlaylists.length > 0) {
+                        const pl = sortedPlaylists[0];
+                        handleOpenFile({
+                          id: `playlist-${pl._id}`,
+                          type: "playlist",
+                          title: pl.title,
+                          description: pl.description,
+                          url: pl.url,
+                          raw: pl,
+                        });
+                      }
+                    }}
+                    className="tooldeck-start-cmd-row"
+                  >
+                    <div className="tooldeck-start-cmd-left">
+                      <ListVideo size={16} />
+                      <span>Browse Video Playlists</span>
+                    </div>
+                    <span className="tooldeck-start-kbd">VIDEOS</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("notes");
+                      if (notes.length > 0) {
+                        const note = notes[0];
+                        handleOpenFile({
+                          id: `note-${note._id}`,
+                          type: "note",
+                          title: note.title,
+                          description: note.description,
+                          url: note.url,
+                          raw: note,
+                        });
+                      }
+                    }}
+                    className="tooldeck-start-cmd-row"
+                  >
+                    <div className="tooldeck-start-cmd-left">
+                      <FileText size={16} />
+                      <span>Read Study Notes</span>
+                    </div>
+                    <span className="tooldeck-start-kbd">NOTES</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="resources-tab-panel">
-        {activeTab === "pyqs" && renderPyqsTab()}
-        {activeTab === "playlists" && renderPlaylistsTab()}
-        {activeTab === "notes" && renderNotesTab()}
-      </div>
-
+      {/* Fullscreen PdfViewer Modal */}
       <PdfViewer
         key={`${viewer.open}-${viewer.url}`}
         isOpen={viewer.open}

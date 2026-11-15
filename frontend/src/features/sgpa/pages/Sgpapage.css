@@ -1,13 +1,22 @@
 .gpa-page {
-  --primary: #78c99a;
-  --primary-hover: #91d9ad;
-  --primary-focus: #78c99a;
-  --on-primary: #102117;
-  --success: #78c99a;
-  --warning: #e9a66b;
+  --primary: #3e9b8f;
+  --primary-hover: #4dbfae;
+  --primary-focus: #3e9b8f;
+  --on-primary: #ffffff;
+  --success: #3e9b8f;
+  --warning: #e5a50a;
   width: min(100% - 40px, 1040px);
   margin: 0 auto;
   padding: var(--space-xl) 0 var(--space-xxl);
+}
+
+body.light .gpa-page {
+  --primary: #287d72;
+  --primary-hover: #1f7771;
+  --primary-focus: #287d72;
+  --on-primary: #ffffff;
+  --success: #287d72;
+  --warning: #d97706;
 }
 
 .gpa-page-header {

@@ -243,17 +243,17 @@
 }
 
 /* Grade colors using design system semantic colors */
-.cgpa-result-card .cgpa-grade-outstanding { color: var(--success); }
+.cgpa-result-card .cgpa-grade-outstanding { color: var(--primary); }
 .cgpa-result-card .cgpa-badge-outstanding {
-  background: rgba(39, 166, 68, 0.12); color: var(--success); border: 1px solid rgba(39, 166, 68, 0.2);
+  background: rgba(62, 155, 143, 0.12); color: var(--primary); border: 1px solid rgba(62, 155, 143, 0.2);
 }
-.cgpa-result-card .cgpa-grade-excellent { color: var(--success); }
+.cgpa-result-card .cgpa-grade-excellent { color: var(--primary); }
 .cgpa-result-card .cgpa-badge-excellent {
-  background: rgba(39, 166, 68, 0.12); color: var(--success); border: 1px solid rgba(39, 166, 68, 0.2);
+  background: rgba(62, 155, 143, 0.12); color: var(--primary); border: 1px solid rgba(62, 155, 143, 0.2);
 }
 .cgpa-result-card .cgpa-grade-good { color: var(--primary); }
 .cgpa-result-card .cgpa-badge-good {
-  background: rgba(120, 201, 154, 0.12); color: var(--primary); border: 1px solid rgba(120, 201, 154, 0.2);
+  background: rgba(62, 155, 143, 0.12); color: var(--primary); border: 1px solid rgba(62, 155, 143, 0.2);
 }
 .cgpa-result-card .cgpa-grade-average { color: var(--warning); }
 .cgpa-result-card .cgpa-badge-average {
@@ -452,7 +452,7 @@
 .cgpa-card .form-input:focus,
 .simulator-card .form-input:focus {
   border-color: var(--primary-focus);
-  box-shadow: 0 0 0 3px rgba(120, 201, 154, 0.18);
+  box-shadow: 0 0 0 3px rgba(62, 155, 143, 0.18);
 }
 .cgpa-card .btn-success {
   background: var(--primary);

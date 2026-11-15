@@ -1,0 +1,93 @@
+/* ============================================================================
+   Edubits — Universal Minimalist Footer Logo
+   Attached flush to the bottom edge of the screen / page without floating.
+   ============================================================================ */
+
+.site-footer-logo-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin-top: auto;
+  margin-bottom: 0 !important;
+  padding-top: clamp(16px, 3vw, 36px);
+  padding-bottom: 0 !important;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  position: relative;
+  z-index: 1;
+  line-height: 0;
+}
+
+.page > .site-footer-logo-wrap {
+  margin-left: calc(-1 * var(--space-lg));
+  margin-right: calc(-1 * var(--space-lg));
+  width: calc(100% + (2 * var(--space-lg)));
+}
+
+@media (max-width: 768px) {
+  .page > .site-footer-logo-wrap {
+    margin-left: calc(-1 * var(--space-md));
+    margin-right: calc(-1 * var(--space-md));
+    width: calc(100% + (2 * var(--space-md)));
+  }
+}
+
+.site-footer-logo-viewport {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100vw;
+  /* Attached to bottom edge: frames top of the owl flush with screen floor */
+  height: clamp(140px, 16vw, 195px);
+  overflow: hidden;
+  line-height: 0;
+  margin-bottom: 0 !important;
+
+  /* Mask directly on the viewport so it reaches 0 opacity precisely at the screen floor */
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 1) 55%,
+    rgba(0, 0, 0, 0.35) 85%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 1) 55%,
+    rgba(0, 0, 0, 0.35) 85%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.site-footer-logo-img {
+  width: clamp(210px, 23vw, 300px);
+  max-width: 80vw;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+  opacity: 0.82;
+  filter: drop-shadow(0 -2px 14px rgba(62, 155, 143, 0.15));
+}
+
+.site-footer-logo-img.light-only {
+  display: none;
+}
+
+body.light .site-footer-logo-img.dark-only {
+  display: none;
+}
+
+body.light .site-footer-logo-img.light-only {
+  display: block;
+  opacity: 0.95;
+  filter: drop-shadow(0 2px 14px rgba(40, 125, 114, 0.22)) drop-shadow(0 -1px 8px rgba(17, 93, 98, 0.15));
+}

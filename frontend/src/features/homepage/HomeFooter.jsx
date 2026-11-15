@@ -28,12 +28,6 @@ export default function HomeFooter() {
             ))}
           </ul>
         </nav>
-        <nav className="hp-footer-nav">
-          <h4>Background</h4>
-          <ul>
-            <li><Link to="/about">About</Link></li>
-          </ul>
-        </nav>
       </div>
       <div className="hp-footer-bottom">
         <p>&copy; {new Date().getFullYear()} Edubits. All rights reserved.</p>

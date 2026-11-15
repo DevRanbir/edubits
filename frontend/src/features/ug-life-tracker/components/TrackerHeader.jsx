@@ -11,7 +11,7 @@ export default function TrackerHeader() {
         margin: 0,
         marginBottom: 18,
       }}>
-        Engineering <em style={{ fontStyle: "italic", fontWeight: 400, color: "#4ade80" }}>Tracker</em>
+        Engineering <em style={{ fontStyle: "italic", fontWeight: 400, color: "var(--primary, #3e9b8f)" }}>Tracker</em>
       </h1>
       <p style={{
         fontSize: 11,

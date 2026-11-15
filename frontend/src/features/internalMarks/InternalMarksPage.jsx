@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "../../context/authValue";
 import Hybrid    from "./Hybrid";
 import Theory    from "./Theory";
 import Practical from "./Practical";
@@ -6,7 +7,18 @@ import Aptitude  from "./Aptitude";
 import SoftSkill from "./SoftSkill";
 import "./InternalMarksPage.css";
 
-import { ClipboardCheck, BookOpen, FlaskConical, Wrench, Brain, Users, GraduationCap, Cpu } from "lucide-react";
+import {
+  ClipboardCheck,
+  BookOpen,
+  FlaskConical,
+  Wrench,
+  Brain,
+  Users,
+  GraduationCap,
+  Cpu,
+  ChevronDown,
+  Check,
+} from "lucide-react";
 
 const PROGRAM_OPTIONS = [
   { key: "cse", label: "BE CSE(General)", description: "", icon: GraduationCap },
@@ -95,95 +107,238 @@ const SUBJECT_EXAMPLES = {
   },
 };
 
-export default function InternalMarksPage() {
-  const [program, setProgram] = useState("cse");
-  const [year, setYear] = useState("3");
+export default function InternalMarksPage({ embedded = false }) {
+  const { user } = useAuth();
+
+  const getInitialProgram = () => {
+    try {
+      const stored =
+        localStorage.getItem("edubits_academic_program") ||
+        user?.academicProgram ||
+        user?.program;
+      if (stored && String(stored).toLowerCase().includes("ait")) return "ait";
+    } catch {
+      // ignore
+    }
+    return "cse";
+  };
+
+  const getInitialYear = (currentProgram) => {
+    try {
+      const stored =
+        localStorage.getItem("edubits_academic_year") || user?.academicYear;
+      if (stored) {
+        const s = String(stored).toLowerCase();
+        if (currentProgram === "ait") {
+          return "3-aiml";
+        }
+        if (s.includes("1")) return "1";
+        if (s.includes("2")) return "2";
+        if (s.includes("3")) return "3";
+        if (s.includes("4") || s.includes("senior")) return "senior";
+      }
+    } catch {
+      // ignore
+    }
+    return currentProgram === "ait" ? "3-aiml" : "2";
+  };
+
+  const [program, setProgram] = useState(getInitialProgram);
+  const [year, setYear] = useState(() => getInitialYear(getInitialProgram()));
   const [tab, setTab] = useState("hybrid");
+
+  const [programOpen, setProgramOpen] = useState(false);
+  const [yearOpen, setYearOpen] = useState(false);
+  const programDropdownRef = useRef(null);
+  const yearDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (programDropdownRef.current && !programDropdownRef.current.contains(e.target)) {
+        setProgramOpen(false);
+      }
+      if (yearDropdownRef.current && !yearDropdownRef.current.contains(e.target)) {
+        setYearOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setProgramOpen(false);
+        setYearOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   const switchProgram = (p) => {
     setProgram(p);
-    // YEAR_OPTIONS[p] is an array of { key, label }, so take the first key
-    setYear((YEAR_OPTIONS[p] || [])[0]?.key);
+    const newYear = (YEAR_OPTIONS[p] || [])[0]?.key || "1";
+    setYear(newYear);
     setTab("hybrid");
+    try {
+      localStorage.setItem("edubits_academic_program", p);
+    } catch {
+      // ignore
+    }
+  };
+
+  const selectYear = (y) => {
+    setYear(y);
+    setTab("hybrid");
+    try {
+      const yrMap = {
+        "1": "1st_year",
+        "2": "2nd_year",
+        "3": "3rd_year",
+        senior: "4th_year",
+      };
+      if (yrMap[y]) {
+        localStorage.setItem("edubits_academic_year", yrMap[y]);
+      }
+    } catch {
+      // ignore
+    }
   };
 
   const tabs = (TAB_CONFIG[program] && TAB_CONFIG[program][year]) || [];
   const exampleYear = year.startsWith("3-") ? "3" : year;
 
-  return (
-    <div className="internal-container">
-      <div className="internal-header">
-        <h1 className="internal-title">
-          <ClipboardCheck size={28} strokeWidth={2.2} /> Internal Marks Calculator
-        </h1>
-      </div>
+  const currentProgramObj = PROGRAM_OPTIONS.find((p) => p.key === program) || PROGRAM_OPTIONS[0];
+  const ProgramIcon = currentProgramObj.icon;
+  const currentYearOptions = YEAR_OPTIONS[program] || [];
+  const currentYearObj = currentYearOptions.find((y) => y.key === year) || currentYearOptions[0];
 
-      {/* Program Selector */}
-      <div className="internal-program-selector">
-        <p className="selector-label">Program</p>
-        <div className="pill-tabs" role="tablist" aria-label="Program">
-          {PROGRAM_OPTIONS.map(({ key, label, icon: Icon }) => (
+  return (
+    <div className={`internal-container ${embedded ? "internal-container--embedded" : ""}`}>
+      {!embedded && (
+        <div className="internal-header">
+          <h1 className="internal-title">
+            <ClipboardCheck size={28} strokeWidth={2.2} /> Internal Marks Calculator
+          </h1>
+        </div>
+      )}
+
+      {/* Unified Single Control Bar: Program Dropdown | Year Dropdown | Subject Type Tabs */}
+      <div className="internal-unified-bar" role="toolbar" aria-label="Internal marks filters">
+        {/* 1. Program Dropdown */}
+        <div className="internal-dropdown-wrapper" ref={programDropdownRef}>
+          <button
+            type="button"
+            className={`internal-dropdown-trigger ${programOpen ? "open" : ""}`}
+            onClick={() => {
+              setProgramOpen((prev) => !prev);
+              setYearOpen(false);
+            }}
+            aria-haspopup="listbox"
+            aria-expanded={programOpen}
+          >
+            <ProgramIcon size={13} className="internal-dropdown-icon" />
+            <span className="internal-dropdown-label">{currentProgramObj.label}</span>
+            <ChevronDown size={13} className={`internal-dropdown-chevron ${programOpen ? "rotated" : ""}`} />
+          </button>
+
+          {programOpen && (
+            <div className="internal-dropdown-menu" role="listbox" aria-label="Select Program">
+              {PROGRAM_OPTIONS.map(({ key, label, icon: Icon }) => {
+                const isSelected = program === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    className={`internal-dropdown-item ${isSelected ? "selected" : ""}`}
+                    onClick={() => {
+                      switchProgram(key);
+                      setProgramOpen(false);
+                    }}
+                  >
+                    <Icon size={13} />
+                    <span>{label}</span>
+                    {isSelected && <Check size={12} className="internal-dropdown-check" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* 2. Year Dropdown */}
+        <div className="internal-dropdown-wrapper" ref={yearDropdownRef}>
+          <button
+            type="button"
+            className={`internal-dropdown-trigger ${yearOpen ? "open" : ""}`}
+            onClick={() => {
+              setYearOpen((prev) => !prev);
+              setProgramOpen(false);
+            }}
+            aria-haspopup="listbox"
+            aria-expanded={yearOpen}
+          >
+            <span className="internal-dropdown-label">{currentYearObj?.label || "Select Year"}</span>
+            <ChevronDown size={13} className={`internal-dropdown-chevron ${yearOpen ? "rotated" : ""}`} />
+          </button>
+
+          {yearOpen && (
+            <div className="internal-dropdown-menu" role="listbox" aria-label="Select Year">
+              {currentYearOptions.map(({ key, label }) => {
+                const isSelected = year === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    className={`internal-dropdown-item ${isSelected ? "selected" : ""}`}
+                    onClick={() => {
+                      selectYear(key);
+                      setYearOpen(false);
+                    }}
+                  >
+                    <span>{label}</span>
+                    {isSelected && <Check size={12} className="internal-dropdown-check" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="internal-bar-divider" aria-hidden="true" />
+
+        {/* 3. Subject Type Tabs */}
+        <div className="internal-bar-group internal-bar-group--types" role="tablist" aria-label="Subject type">
+          {tabs.map(({ key, label, icon: Icon, desc }) => (
             <button
               key={key}
+              type="button"
               role="tab"
-              aria-selected={program === key}
-              className={`pill-tab ${program === key ? "active" : ""}`}
-              onClick={() => switchProgram(key)}
+              aria-selected={tab === key}
+              className={`internal-bar-btn internal-bar-btn--type ${tab === key ? "active" : ""}`}
+              onClick={() => setTab(key)}
+              title={desc}
             >
-              <Icon size={16} />
+              <Icon size={13} />
               <span>{label}</span>
             </button>
           ))}
         </div>
-        {PROGRAM_OPTIONS.find(p => p.key === program)?.description && (
-          <p className="selector-description">{PROGRAM_OPTIONS.find(p => p.key === program)?.description}</p>
-        )}
       </div>
 
-      {/* Year Toggle */}
-      <div className="internal-year-selector">
-        <p className="selector-label">Year</p>
-        <div className="pill-tabs" role="tablist" aria-label="Year">
-          {(YEAR_OPTIONS[program] || []).map(({ key, label }) => (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={year === key}
-              className={`pill-tab ${year === key ? "active" : ""}`}
-              onClick={() => { setYear(key); setTab("hybrid"); }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Subject Tabs */}
-      <div className="pill-tabs internal-tabs" role="tablist" aria-label="Subject type">
-        {tabs.map(({ key, label, icon: Icon, desc }) => (
-          <button
-            key={key}
-            role="tab"
-            aria-selected={tab === key}
-            className={`pill-tab ${tab === key ? "active" : ""}`}
-            onClick={() => setTab(key)}
-            title={desc}
-          >
-            <Icon size={16} />
-            <span>{label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Subject Examples */}
+      {/* Refined Subject Examples Context Strip */}
       {SUBJECT_EXAMPLES[exampleYear]?.[tab] && (
-        <div className="subject-examples">
-          <p className="examples-title">Example {tab} subjects:</p>
-          <ul>
+        <div className="internal-examples-strip">
+          <span className="internal-examples-label">Example {tab} subjects:</span>
+          <div className="internal-examples-list">
             {SUBJECT_EXAMPLES[exampleYear][tab].map((subj, i) => (
-              <li key={i}>{subj}</li>
+              <span key={i} className="internal-example-chip">{subj}</span>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 

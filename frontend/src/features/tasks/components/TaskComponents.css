@@ -158,7 +158,7 @@
   font-size: var(--text-caption);
   padding: 2px 8px;
   border-radius: var(--radius-sm);
-  background: rgba(94, 106, 210, 0.15);
+  background: var(--primary-subtle, rgba(62, 155, 143, 0.15));
   color: var(--primary);
   font-weight: 500;
 }
@@ -320,7 +320,7 @@
 .task-form-select:focus {
   border-color: var(--primary-focus);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.25);
+  box-shadow: 0 0 0 2px var(--primary-glow, rgba(62, 155, 143, 0.25));
 }
 
 .task-form-input::placeholder {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Editor from "@monaco-editor/react";
+import { toast } from "sonner";
 import {
   fetchTopicsAPI,
   fetchProblemsAPI,
@@ -96,22 +97,33 @@ export default function ProgrammingAdmin() {
   // ── save ──────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
-    if (!form.title.trim()) { setStatus({ type: "error", msg: "Title is required" }); return; }
-    if (!form.topic) { setStatus({ type: "error", msg: "Topic is required" }); return; }
+    if (!form.title.trim()) {
+      toast.error("Title is required");
+      setStatus({ type: "error", msg: "Title is required" });
+      return;
+    }
+    if (!form.topic) {
+      toast.error("Topic is required");
+      setStatus({ type: "error", msg: "Topic is required" });
+      return;
+    }
 
     setSaving(true);
     setStatus(null);
     try {
       if (editingId) {
         await updateProblemAPI(editingId, form);
+        toast.success("Problem updated.");
         setStatus({ type: "success", msg: "Problem updated." });
       } else {
         await createProblemAPI(form);
+        toast.success("Problem created.");
         setStatus({ type: "success", msg: "Problem created." });
       }
       resetForm();
       await load();
     } catch (err) {
+      toast.error(err.message || "Failed to save problem");
       setStatus({ type: "error", msg: err.message });
     } finally {
       setSaving(false);
@@ -126,8 +138,10 @@ export default function ProgrammingAdmin() {
       await deleteProblemAPI(id);
       if (editingId === id) resetForm();
       await load();
+      toast.success("Problem deleted.");
       setStatus({ type: "success", msg: "Deleted." });
     } catch (err) {
+      toast.error(err.message || "Failed to delete problem");
       setStatus({ type: "error", msg: err.message });
     }
   };

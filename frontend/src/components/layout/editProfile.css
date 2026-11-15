@@ -32,7 +32,7 @@
 .ep-title {
   font-size: 18px;
   font-weight: 700;
-  color: var(--primary, #3b82f6);
+  color: var(--primary, #3e9b8f);
   margin: 0;
 }
 
@@ -67,9 +67,9 @@
 }
 
 .ep-toast-success {
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #22c55e;
+  background: rgba(62, 155, 143, 0.12);
+  border: 1px solid rgba(62, 155, 143, 0.3);
+  color: var(--primary, #3e9b8f);
 }
 
 .ep-toast-error {
@@ -121,9 +121,9 @@
 }
 
 .ep-input:focus {
-  border-color: #3b82f6;
+  border-color: var(--primary, #3e9b8f);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+  box-shadow: 0 0 0 2px var(--primary-glow, rgba(62, 155, 143, 0.25));
 }
 
 .ep-input::placeholder { color: #4b5563; }
@@ -198,7 +198,7 @@
 .ep-btn-save {
   height: 40px;
   padding: 0 20px;
-  background: #3b82f6;
+  background: var(--primary, #3e9b8f);
   border: none;
   border-radius: 10px;
   color: #fff;
@@ -209,7 +209,9 @@
   transition: background 0.15s, opacity 0.15s;
 }
 
-.ep-btn-save:hover:not(:disabled) { background: #2563eb; }
+.ep-btn-save:hover:not(:disabled) {
+  background: var(--primary-hover, #4dbfae);
+}
 .ep-btn-save:disabled { opacity: 0.55; cursor: not-allowed; }
 
 @media (max-width: 480px) {

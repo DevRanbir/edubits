@@ -12,10 +12,12 @@ import {
   Info,
   RotateCcw,
   Send,
-  Square,
+  Sparkles,
 } from "lucide-react";
 
+import GradientASCII from "../../../components/ui/GradientASCII";
 import { useAuth } from "../../../context/authValue";
+import { recordRecentActivity } from "../../../utils/recentActivity";
 import "./QuizPage.css";
 
 const QUESTION_COUNT = 10;
@@ -40,6 +42,20 @@ export default function QuizPage() {
   const timerRef = useRef(null);
   const startTimeRef = useRef(Date.now());
   const answersRef = useRef([]);
+
+  // Manage disabled sidebar when quiz is live
+  useEffect(() => {
+    const isLive = phase === "question" || phase === "submitting";
+    if (isLive) {
+      document.body.classList.add("quiz-is-live");
+    } else {
+      document.body.classList.remove("quiz-is-live");
+    }
+
+    return () => {
+      document.body.classList.remove("quiz-is-live");
+    };
+  }, [phase]);
 
   const isMultiSelect = (question) => {
     return question?.isMultiSelect === true;
@@ -71,6 +87,17 @@ export default function QuizPage() {
       setSessionToken(data.sessionToken);
       setTopic({ ...data.topic, _id: data.topic._id || data.topic.id });
       setPhase("ready");
+
+      if (data.topic?.name) {
+        recordRecentActivity({
+          id: `quiz-${topicId}`,
+          type: "quiz",
+          title: data.topic.name,
+          subtitle: "QuizEngine • Practice",
+          href: `/quizzes/${topicId}`,
+          icon: "BrainCircuit",
+        });
+      }
     } catch (err) {
       setError(err.response?.data?.error || "Failed to load quiz.");
       setPhase("error");
@@ -130,8 +157,7 @@ export default function QuizPage() {
         return next;
       });
     } else {
-      // Single select: radio button behavior
-      setSelected(prev => prev[0] === optIndex ? [] : [optIndex]);
+      setSelected((prev) => (prev[0] === optIndex ? [] : [optIndex]));
     }
   };
 
@@ -143,7 +169,6 @@ export default function QuizPage() {
     const multi = isMultiSelect(q);
     const timeTaken = (q.timeLimitSeconds || 30) - timeLeft;
 
-    // For single-select, require an answer; for multi-select, allow empty
     if (!multi && selected.length === 0) return;
 
     setRevealed(true);
@@ -194,157 +219,232 @@ export default function QuizPage() {
     }
   };
 
+  // Shared ASCII Background component
+  const asciiBackground = (
+    <div className="quiz-ascii-bg" aria-hidden="true">
+      <GradientASCII
+        shape="horizon"
+        colors={["#115d62", "#1f7771", "#3e9b8f", "#5cc2b4"]}
+        density={0.7}
+        glyphOpacity={0.5}
+        glow={0.3}
+        flicker={0.12}
+        mouseInteraction={false}
+        intro={false}
+      />
+    </div>
+  );
+
   if (phase === "loading" || phase === "submitting") {
-    return <div className="quiz-ready-card">Loading...</div>;
+    return (
+      <div className="quiz-stage-shell">
+        {asciiBackground}
+        <div className="quiz-stage-canvas quiz-center-canvas">
+          <div className="quiz-loading-spinner" />
+          <p className="quiz-loading-text">
+            {phase === "submitting" ? "Submitting your answers..." : "Loading quiz questions..."}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (phase === "error") {
     return (
-      <div className="quiz-ready-card card card-mini">
-        <h2>Error</h2>
-        <p>{error}</p>
-        <button className="btn btn-primary" onClick={startQuiz}>
-          <RotateCcw size={17} /> Retry
-        </button>
+      <div className="quiz-stage-shell">
+        {asciiBackground}
+        <div className="quiz-stage-canvas quiz-center-canvas">
+          <div className="quiz-status-icon error">
+            <Info size={28} />
+          </div>
+          <h2 className="quiz-feedback-title">Unable to Start Quiz</h2>
+          <p className="quiz-feedback-desc">{error}</p>
+          <button className="btn btn-primary" onClick={startQuiz}>
+            <RotateCcw size={16} /> Retry
+          </button>
+        </div>
       </div>
     );
   }
 
   if (phase === "ready") {
     return (
-      <div className="quiz-shell quiz-stage-shell fade-in">
-        <button className="quiz-back-link" onClick={() => navigate("/quizzes")}>
-          <ArrowLeft size={17} />
-          All topics
-        </button>
+      <div className="quiz-stage-shell">
+        {asciiBackground}
 
-        <section className="quiz-launch-card card">
-          <div className="quiz-launch-icon"><BookOpen size={27} /></div>
-          <span className="quiz-launch-eyebrow">QUIZ PREVIEW</span>
-          <h1>{topic?.name}</h1>
-          <p className="quiz-launch-description">
-            You’re about to start a focused practice round. Take your time and read each question carefully.
-          </p>
-
-          <div className="quiz-launch-facts">
-            <div><CheckCircle2 size={18} /><span><strong>{questions.length}</strong> questions</span></div>
-            <div><Clock3 size={18} /><span><strong>Timed</strong> questions</span></div>
-          </div>
-
-          <div className="quiz-launch-tip">
-            <Info size={17} />
-            Correct answers and explanations appear after you submit the quiz.
-          </div>
-
-          <button
-            className="btn btn-primary quiz-launch-button"
-            onClick={() => {
-              startTimeRef.current = Date.now();
-              setPhase("question");
-            }}
-          >
-            Start Quiz
-            <ArrowRight size={18} />
+        <div className="quiz-stage-canvas quiz-launch-canvas">
+          <button className="quiz-nav-back" onClick={() => navigate("/quizzes")}>
+            <ArrowLeft size={16} />
+            <span>All topics</span>
           </button>
-          <span className="quiz-launch-footnote">The timer starts when you begin.</span>
-        </section>
+
+          <div className="quiz-launch-hero">
+            <div className="quiz-pill-badge">
+              <Sparkles size={13} />
+              <span>PRACTICE QUIZ</span>
+            </div>
+
+            <h1 className="quiz-launch-title">{topic?.name}</h1>
+
+            <p className="quiz-launch-subtitle">
+              {topic?.description ||
+                "Practice your conceptual grasp with focused timed multiple-choice questions. Explanations will appear after submission."}
+            </p>
+
+            <div className="quiz-meta-strip">
+              <div className="quiz-meta-tag">
+                <CheckCircle2 size={15} />
+                <span><strong>{questions.length}</strong> Questions</span>
+              </div>
+              <div className="quiz-meta-tag">
+                <Clock3 size={15} />
+                <span><strong>30s</strong> Per Question</span>
+              </div>
+            </div>
+
+            <div className="quiz-launch-actions">
+              <button
+                className="quiz-cta-button"
+                onClick={() => {
+                  startTimeRef.current = Date.now();
+                  setPhase("question");
+                }}
+              >
+                <span>Start Quiz</span>
+                <ArrowRight size={17} />
+              </button>
+              <span className="quiz-launch-hint">Timer starts as soon as you begin</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   const q = questions[current];
   const multi = isMultiSelect(q);
+  const progressPercent = ((current + 1) / questions.length) * 100;
 
   return (
-    <div className="quiz-shell quiz-stage-shell fade-in">
-      <div className="quiz-play-card card card-panel">
-        <div className="quiz-play-header">
-          <div className="quiz-question-progress">
-            <div className="quiz-progress-text">
-              <CheckCircle2 size={18} />
-              <span>{topic?.name}</span>
-            </div>
-            <span className="quiz-question-count">Question {current + 1} <span>/ {questions.length}</span></span>
+    <div className="quiz-stage-shell">
+      {asciiBackground}
+
+      <div className="quiz-stage-canvas">
+        {/* Top Header Row (Back, Topic, Question Counter, Timer) */}
+        <div className="quiz-top-bar">
+          <div className="quiz-top-left">
+            <button className="quiz-nav-back" onClick={() => navigate("/quizzes")}>
+              <ArrowLeft size={15} />
+              <span className="quiz-nav-topic-name">{topic?.name}</span>
+            </button>
+            <span className="quiz-top-divider">/</span>
+            <span className="quiz-step-indicator">
+              Question <strong>{current + 1}</strong> of {questions.length}
+            </span>
           </div>
 
-          <div className={`quiz-timer ${timeLeft <= 10 ? "is-urgent" : ""}`}>
-            <Clock3 size={18} />
-            {formatTime(timeLeft)}
+          <div className={`quiz-timer-pill ${timeLeft <= 10 ? "is-urgent" : ""}`}>
+            <Clock3 size={14} />
+            <span>{formatTime(timeLeft)}</span>
           </div>
         </div>
 
+        {/* Minimal Progress Line */}
         <div
-          className="quiz-progress-track"
+          className="quiz-progress-line"
           role="progressbar"
           aria-label="Quiz progress"
           aria-valuemin={0}
           aria-valuemax={questions.length}
           aria-valuenow={current + 1}
         >
-          <span style={{ width: `${((current + 1) / questions.length) * 100}%` }} />
+          <div
+            className="quiz-progress-fill"
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
 
-        <h2 className="quiz-question-title">{q.text}</h2>
-        {multi && (
-          <div className="quiz-multi-hint">
-            Multiple correct answers possible. Select all that apply.
+        {/* Question Area - Single flat layer */}
+        <div className="quiz-main-stage">
+          <div className="quiz-question-header">
+            {multi && (
+              <span className="quiz-multi-pill">
+                Multi-select · Select all that apply
+              </span>
+            )}
+            <h2 className="quiz-question-heading">{q.text}</h2>
           </div>
-        )}
-        {error && (
-          <div className="quiz-error">
-            <Info size={18} />
-            {error}
+
+          {error && (
+            <div className="quiz-inline-error">
+              <Info size={16} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Options: flat single layer */}
+          <div className="quiz-options-grid">
+            {q.options.map((opt, i) => {
+              const isSelected = selected.includes(i);
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => handleToggleOption(i)}
+                  disabled={revealed}
+                  className={`quiz-single-option ${isSelected ? "is-selected" : ""} ${revealed ? "is-revealed" : ""}`}
+                >
+                  <span className="quiz-option-key">
+                    {["A", "B", "C", "D", "E"][i]}
+                  </span>
+                  <span className="quiz-option-label">{opt}</span>
+                  <span className="quiz-option-indicator">
+                    {isSelected && <Check size={14} strokeWidth={2.5} />}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        )}
-        <div className="quiz-options-grid">
-          {q.options.map((opt, i) => {
-            const isSelected = selected.includes(i);
-            return (
-              <button
-                key={i}
-                onClick={() => handleToggleOption(i)}
-                disabled={revealed}
-                className={`quiz-option ${multi ? "is-multi" : ""} ${!revealed && isSelected ? "is-selected" : ""}`}
-              >
-                <span className={`quiz-option-indicator ${multi ? "checkbox" : "radio"}`}>
-                  {isSelected ? <Check size={16} /> : multi ? <Square size={16} /> : null}
-                </span>
-                <span className="quiz-option-letter">{["A", "B", "C", "D"][i]}</span>
-                <span style={{ flex: 1 }}>{opt}</span>
-              </button>
-            );
-          })}
+
+          {revealed && (
+            <div className="quiz-status-notice">
+              <Info size={15} />
+              <span>Answer recorded. Correct answers and detailed solutions will appear in your results report.</span>
+            </div>
+          )}
+
+          {/* Bottom Action Footer */}
+          <div className="quiz-bottom-actions">
+            <div className="quiz-bottom-meta">
+              {multi ? (
+                <span>{selected.length} option{selected.length === 1 ? "" : "s"} selected</span>
+              ) : (
+                <span>{selected.length > 0 ? "Option selected" : "Select an answer"}</span>
+              )}
+            </div>
+
+            <div className="quiz-bottom-cta">
+              {revealed ? (
+                <button
+                  className="quiz-cta-button"
+                  onClick={handleNext}
+                >
+                  <span>{current + 1 >= questions.length ? "Submit Quiz" : "Next Question"}</span>
+                  {current + 1 >= questions.length ? <Send size={16} /> : <ArrowRight size={16} />}
+                </button>
+              ) : (
+                <button
+                  className="quiz-cta-button"
+                  onClick={handleConfirmAnswer}
+                  disabled={!multi && selected.length === 0}
+                >
+                  <span>{multi ? "Submit Answer" : "Confirm"}</span>
+                  <ArrowRight size={16} />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-
-        {revealed && (
-          <div className="quiz-explanation">
-            <Info size={18} />
-            Answer recorded. Correct answers and explanations will appear in your results.
-          </div>
-        )}
-
-        {revealed && (
-          <button
-            className="btn btn-primary"
-            style={{ marginTop: "var(--space-lg)", width: "100%" }}
-            onClick={handleNext}
-          >
-            {current + 1 >= questions.length ? "Submit" : "Next"}
-            {current + 1 >= questions.length ? <Send size={18} /> : <ArrowRight size={18} />}
-          </button>
-        )}
-
-        {!revealed && (
-          <button
-            className="btn btn-primary"
-            style={{ marginTop: "var(--space-lg)", width: "100%" }}
-            onClick={handleConfirmAnswer}
-            disabled={!multi && selected.length === 0}
-          >
-            {multi ? "Submit Answer" : "Confirm"}
-            <ArrowRight size={18} />
-          </button>
-        )}
       </div>
     </div>
   );

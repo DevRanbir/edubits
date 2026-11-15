@@ -1,11 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth } from "../../context/authValue";
 import { API_URL } from "../../config/api";
-import { X, User, Mail, Lock, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
+import { X, User, Mail, Lock, Eye, EyeOff, Camera, LogOut } from "lucide-react";
 import "./editProfile.css";
 
 export default function EditProfileModal({ onClose }) {
   const { user, setUser, logout } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name:            user?.name  || "",
     email:           user?.email || "",
@@ -19,18 +22,62 @@ export default function EditProfileModal({ onClose }) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [loading,  setLoading]  = useState(false);
-  const [toast,    setToast]    = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
   const [deleting, setDeleting] = useState(false);
 
   const showToast = (type, msg) => {
-    setToast({ type, msg });
-    setTimeout(() => setToast(null), 3500);
+    if (type === "success") toast.success(msg);
+    else if (type === "error") toast.error(msg);
+    else toast.info(msg);
   };
 
   const handleChange = (field, value) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+      return showToast("error", "Only JPG/PNG images allowed");
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      return showToast("error", "Image size should be less than 2MB");
+    }
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      setAvatarUploading(true);
+      const res = await fetch(`${API_URL}/auth/upload-avatar`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        return showToast("error", err.message || "Upload failed");
+      }
+
+      const data = await res.json();
+      setUser(data.user);
+      showToast("success", "Avatar updated successfully!");
+    } catch {
+      showToast("error", "Upload failed. Please try again.");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    onClose();
+    navigate("/");
+  };
 
   const handleSave = async () => {
     if (form.name.trim().length < 2)
@@ -146,14 +193,51 @@ export default function EditProfileModal({ onClose }) {
           <button className="ep-close" onClick={onClose}><X size={18} /></button>
         </div>
 
-        {toast && (
-          <div className={`ep-toast ep-toast-${toast.type}`}>
-            {toast.type === "success"
-              ? <CheckCircle size={15} />
-              : <AlertCircle size={15} />}
-            {toast.msg}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "20px" }}>
+          <div style={{ position: "relative" }}>
+            <img
+              src={user?.avatar || "/images/default-avatar.jpg"}
+              alt="Avatar"
+              style={{
+                width: "56px",
+                height: "56px",
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid var(--border)",
+              }}
+            />
           </div>
-        )}
+          <div>
+            <label
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "6px 12px",
+                background: "var(--surface-3, #1e1f20)",
+                border: "1px solid var(--border)",
+                borderRadius: "6px",
+                color: "var(--text)",
+                fontSize: "12px",
+                fontWeight: 500,
+                cursor: avatarUploading ? "not-allowed" : "pointer",
+              }}
+            >
+              <Camera size={14} />
+              {avatarUploading ? "Uploading..." : "Change Avatar"}
+              <input
+                type="file"
+                accept="image/png, image/jpeg, image/jpg"
+                hidden
+                disabled={avatarUploading}
+                onChange={handleAvatarChange}
+              />
+            </label>
+            <p style={{ margin: "4px 0 0", fontSize: "11px", color: "var(--muted)" }}>
+              PNG, JPG under 2MB
+            </p>
+          </div>
+        </div>
 
         <div className="ep-group">
           <label className="ep-label"><User size={12} /> NAME</label>
@@ -260,11 +344,31 @@ export default function EditProfileModal({ onClose }) {
           {deleting ? "Deleting Account..." : "Delete Account Permanently"}
         </button>
 
-        <div className="ep-actions">
-          <button className="ep-btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="ep-btn-save" onClick={handleSave} disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
+        <div className="ep-actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <button
+            type="button"
+            onClick={handleLogout}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "transparent",
+              border: "1px solid rgba(229, 72, 77, 0.4)",
+              color: "#e5484d",
+              padding: "8px 12px",
+              borderRadius: "6px",
+              fontSize: "13px",
+              cursor: "pointer",
+            }}
+          >
+            <LogOut size={14} /> Log out
           </button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button className="ep-btn-cancel" onClick={onClose}>Cancel</button>
+            <button className="ep-btn-save" onClick={handleSave} disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
         </div>
 
       </div>
