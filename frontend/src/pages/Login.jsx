@@ -13,7 +13,7 @@ const handleOAuthLogin = (provider) => {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, tempLogin, isLocalhost } = useAuth();
   const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
@@ -131,6 +131,39 @@ export default function Login() {
               )}
             </button>
           </form>
+
+          {isLocalhost && (
+            <div style={{ margin: "14px 0 0", textAlign: "center" }}>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const loggedUser = await tempLogin("user");
+                    if (loggedUser) {
+                      showToast(`Logged in as ${loggedUser.name || loggedUser.email}`, "success");
+                      navigate("/resources");
+                    } else {
+                      showToast("Could not complete login", "error");
+                    }
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="btn btn-secondary"
+                style={{
+                  width: "100%",
+                  fontSize: "13px",
+                  padding: "8px 12px",
+                  border: "1px dashed var(--primary)",
+                  color: "var(--primary)",
+                }}
+              >
+                Local Dev: 1-Click Login
+              </button>
+            </div>
+          )}
 
           <p className="auth-footer">
             New to Edubits?

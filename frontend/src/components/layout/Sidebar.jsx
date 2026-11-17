@@ -10,6 +10,7 @@ import {
   ListTodo,
   Monitor,
   Settings,
+  Plus,
   LogIn,
   Moon as MoonIcon,
   Sun as SunIcon,
@@ -19,7 +20,7 @@ import {
 import "./sidebar.css";
 
 export default function Sidebar() {
-  const { user } = useAuth();
+  const { user, tempLogin, isLocalhost } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -238,6 +239,19 @@ export default function Sidebar() {
                 </span>
                 <span className="sidebar-profile-email">{user.email}</span>
               </div>
+            </div>
+          ) : isLocalhost ? (
+            <div
+              className="sidebar-icon sidebar-add-account"
+              onClick={async () => {
+                await tempLogin("user");
+              }}
+              title={!isExpanded ? "1-Click Login (Localhost)" : undefined}
+              role="button"
+              tabIndex={0}
+            >
+              <Plus size={20} style={{ minWidth: 20 }} />
+              <span className="sidebar-text">1-Click Login</span>
             </div>
           ) : (
             <div

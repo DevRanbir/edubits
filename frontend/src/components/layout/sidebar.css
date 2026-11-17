@@ -367,6 +367,33 @@ body.quiz-is-live .sidebar > * {
   margin-top: 1px;
 }
 
+/* Unauthenticated 1-Click Login (Localhost) Button */
+.sidebar-add-account {
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  margin: 0 8px;
+  width: calc(100% - 16px) !important;
+  padding-left: 10px !important;
+  height: 38px !important;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.sidebar-add-account:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.light .sidebar-add-account {
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #0b1413;
+}
+
+body.light .sidebar-add-account:hover {
+  border-color: rgba(0, 0, 0, 0.45);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
 /* Unauthenticated Log In Button */
 .sidebar-login-btn {
   border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
