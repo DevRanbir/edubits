@@ -11,6 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../../../components/ui/Breadcrumb";
+import WarmTooltip from "../../../components/ui/WarmTooltip";
 import "./Resources.css";
 import "./ResourcesHome.css";
 
@@ -161,20 +162,21 @@ export default function YearPage() {
           {/* Quick Year Switcher */}
           <div className="res-year-switcher">
             {["1st Year", "2nd Year", "3rd Year", "4th Year"].map((yr) => (
-              <Link
-                key={yr}
-                to={`/resources/${encodeURIComponent(yr)}`}
-                onClick={() => {
-                  try {
-                    localStorage.setItem("edubits_academic_year", yr);
-                  } catch {
-                    // ignore
-                  }
-                }}
-                className={`res-year-switcher-btn ${decodedYear === yr ? "active" : ""}`}
-              >
-                {yr}
-              </Link>
+              <WarmTooltip key={yr} content={`Browse ${yr} resources`} side="bottom">
+                <Link
+                  to={`/resources/${encodeURIComponent(yr)}`}
+                  onClick={() => {
+                    try {
+                      localStorage.setItem("edubits_academic_year", yr);
+                    } catch {
+                      // ignore
+                    }
+                  }}
+                  className={`res-year-switcher-btn ${decodedYear === yr ? "active" : ""}`}
+                >
+                  {yr}
+                </Link>
+              </WarmTooltip>
             ))}
           </div>
         </div>

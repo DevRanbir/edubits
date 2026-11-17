@@ -3,15 +3,16 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authValue";
 import DesignedAtSymbol from "./DesignedAtSymbol";
 import SmoothDrawer from "./SmoothDrawer";
+import { WarmTooltip } from "../ui/WarmTooltip";
 import {
   Home,
   BookOpen,
   Brain,
+  Calculator,
+  Info,
   ListTodo,
   Monitor,
   Settings,
-  Plus,
-  LogIn,
   Moon as MoonIcon,
   Sun as SunIcon,
   ChevronsLeft,
@@ -20,7 +21,7 @@ import {
 import "./sidebar.css";
 
 export default function Sidebar() {
-  const { user, tempLogin, isLocalhost } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -32,28 +33,15 @@ export default function Sidebar() {
     return typeof window !== "undefined" && window.innerWidth < 768;
   });
 
-  const [darkMode, setDarkMode] = useState(() => {
-    try {
-      const saved = localStorage.getItem("theme");
-      return saved !== null ? JSON.parse(saved) : true;
-    } catch {
-      return true;
-    }
-  });
-
-  // Sync theme with body class and localStorage
+  // Always keep body in dark mode (light mode disabled, coming soon)
   useEffect(() => {
-    if (darkMode) {
-      document.body.classList.remove("light");
-    } else {
-      document.body.classList.add("light");
-    }
+    document.body.classList.remove("light");
     try {
-      localStorage.setItem("theme", JSON.stringify(darkMode));
+      localStorage.setItem("theme", JSON.stringify(true));
     } catch (e) {
       console.warn("Could not save theme preference:", e);
     }
-  }, [darkMode]);
+  }, []);
 
   // Swipe to show / hide sidebar on mobile
   useEffect(() => {
@@ -96,23 +84,55 @@ export default function Sidebar() {
     setIsExpanded(false);
   };
 
-  const menuItems = [
-    { id: "home", path: "/", icon: Home, label: "Home" },
-    ...(user
-      ? [
-          { id: "resources", path: "/resources", icon: BookOpen, label: "Resources" },
-          { id: "quizzes", path: "/quizzes", icon: Brain, label: "QuizEngine" },
-          { id: "tasks", path: "/tasks", icon: ListTodo, label: "Tool Deck" },
-          ...(user?.role === "admin"
-            ? [{ id: "admin", path: "/admin-upload", icon: Monitor, label: "Admin" }]
-            : []),
-        ]
-      : []),
-  ];
+  const [activeLandingSection, setActiveLandingSection] = useState("top");
 
-  const isItemActive = (path) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
+  const menuItems = user
+    ? [
+        { id: "home", path: "/", icon: Home, label: "Home" },
+        { id: "resources", path: "/resources", icon: BookOpen, label: "Resources" },
+        { id: "quizzes", path: "/quizzes", icon: Brain, label: "QuizEngine" },
+        { id: "tasks", path: "/tasks", icon: ListTodo, label: "Tool Deck" },
+        ...(user?.role === "admin"
+          ? [{ id: "admin", path: "/admin-upload", icon: Monitor, label: "Admin" }]
+          : []),
+      ]
+    : [
+        { id: "home", path: "/", scrollTo: "top", icon: Home, label: "Home" },
+        { id: "resources", path: "/", scrollTo: "resources", icon: BookOpen, label: "Resources" },
+        { id: "quiz", path: "/", scrollTo: "quiz", icon: Brain, label: "QuizEngine" },
+        { id: "calculators", path: "/", scrollTo: "calculators", icon: Calculator, label: "Calculators" },
+        { id: "about", path: "/", scrollTo: "about", icon: Info, label: "About" },
+      ];
+
+  const handleMenuClick = (item) => {
+    if (item.scrollTo) {
+      setActiveLandingSection(item.scrollTo);
+      if (location.pathname !== "/") {
+        navigate("/");
+        setTimeout(() => {
+          if (item.scrollTo === "top") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } else {
+            document.getElementById(item.scrollTo)?.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 120);
+      } else if (item.scrollTo === "top") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        document.getElementById(item.scrollTo)?.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      navigate(item.path);
+    }
+    if (window.innerWidth < 768) setIsMobileHidden(true);
+  };
+
+  const isItemActive = (item) => {
+    if (!user && item.scrollTo) {
+      return location.pathname === "/" && activeLandingSection === item.scrollTo;
+    }
+    if (item.path === "/") return location.pathname === "/";
+    return location.pathname.startsWith(item.path);
   };
 
   const userInitial = (user?.name?.[0] || user?.email?.[0] || "U").toUpperCase();
@@ -133,47 +153,48 @@ export default function Sidebar() {
         onMouseLeave={handleMouseLeave}
         aria-label="Sidebar Navigation"
       >
-        {/* THEME TOGGLE */}
+        {/* THEME TOGGLE (DISABLED - LIGHT MODE COMING SOON) */}
         <div className="sidebar-toggle-wrapper">
           <span className="sidebar-toggle-label">THEME</span>
           <div>
-            <button
-              type="button"
-              onClick={() => setDarkMode(!darkMode)}
-              className={`sidebar-theme-switch ${darkMode ? "dark" : "light"}`}
-              aria-label="Toggle Theme"
-              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-              <span className="sidebar-theme-slider" />
-              <div className="sidebar-theme-icon-container">
-                <MoonIcon
-                  size={14}
-                  className={`sidebar-theme-icon ${darkMode ? "moon-active" : "moon-inactive"}`}
-                />
+            <WarmTooltip content="Light mode coming soon" side="right" delay={100}>
+              <div className="sidebar-theme-switch-wrapper">
+                <button
+                  type="button"
+                  disabled
+                  className="sidebar-theme-switch dark disabled"
+                  aria-label="Light mode coming soon"
+                  title="Light mode coming soon"
+                >
+                  <span className="sidebar-theme-slider" />
+                  <div className="sidebar-theme-icon-container">
+                    <MoonIcon
+                      size={14}
+                      className="sidebar-theme-icon moon-active"
+                    />
+                  </div>
+                  <div className="sidebar-theme-icon-container">
+                    <SunIcon
+                      size={14}
+                      className="sidebar-theme-icon sun-inactive"
+                    />
+                  </div>
+                </button>
               </div>
-              <div className="sidebar-theme-icon-container">
-                <SunIcon
-                  size={14}
-                  className={`sidebar-theme-icon ${!darkMode ? "sun-active" : "sun-inactive"}`}
-                />
-              </div>
-            </button>
+            </WarmTooltip>
           </div>
         </div>
 
         {/* NAV MENU ITEMS */}
         <nav className="sidebar-menu">
           {menuItems.map((item) => {
-            const active = isItemActive(item.path);
+            const active = isItemActive(item);
             const IconComponent = item.icon;
             return (
               <div
                 key={item.id}
                 className={`sidebar-icon ${active ? "active" : ""}`}
-                onClick={() => {
-                  navigate(item.path);
-                  if (window.innerWidth < 768) setIsMobileHidden(true);
-                }}
+                onClick={() => handleMenuClick(item)}
                 title={!isExpanded ? item.label : undefined}
                 role="button"
                 tabIndex={0}
@@ -240,29 +261,26 @@ export default function Sidebar() {
                 <span className="sidebar-profile-email">{user.email}</span>
               </div>
             </div>
-          ) : isLocalhost ? (
-            <div
-              className="sidebar-icon sidebar-add-account"
-              onClick={async () => {
-                await tempLogin("user");
-              }}
-              title={!isExpanded ? "1-Click Login (Localhost)" : undefined}
-              role="button"
-              tabIndex={0}
-            >
-              <Plus size={20} style={{ minWidth: 20 }} />
-              <span className="sidebar-text">1-Click Login</span>
-            </div>
           ) : (
             <div
-              className="sidebar-icon sidebar-login-btn"
+              className="sidebar-icon sidebar-add-account"
               onClick={() => navigate("/login")}
-              title={!isExpanded ? "Log In" : undefined}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigate("/login");
+                }
+              }}
+              title={!isExpanded ? "Log in to Edubits" : undefined}
               role="button"
               tabIndex={0}
             >
-              <LogIn size={20} style={{ minWidth: 20 }} />
-              <span className="sidebar-text">Log In</span>
+              <img
+                src="/images/favicon.png"
+                alt="Edubits"
+                className="sidebar-brand-logo-img"
+              />
+              <span className="sidebar-text">Log in</span>
             </div>
           )}
 
@@ -300,8 +318,6 @@ export default function Sidebar() {
         onOpenChange={setIsSettingsOpen}
         activeTab={settingsTab}
         onTabChange={setSettingsTab}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
       />
     </>
   );

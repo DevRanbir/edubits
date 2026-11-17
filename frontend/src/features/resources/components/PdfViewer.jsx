@@ -1,9 +1,16 @@
 import { useState, useCallback, useEffect } from "react";
 import { X, Download } from "lucide-react";
+import WarmTooltip from "../../../components/ui/WarmTooltip";
 import "./PdfViewer.css";
 
 const getAttachmentUrl = (sourceUrl) =>
   sourceUrl?.replace("/upload/", "/upload/fl_attachment/") || sourceUrl;
+
+const getFullWidthPdfUrl = (url) => {
+  if (!url) return "";
+  const baseUrl = url.split("#")[0];
+  return `${baseUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitH&zoom=page-width&pagemode=none`;
+};
 
 export default function PdfViewer({
   isOpen,
@@ -83,20 +90,24 @@ export default function PdfViewer({
           )}
 
           <div className="pdf-viewer-actions">
-            <button
-              className="pdf-action-btn"
-              onClick={handleDownload}
-              title="Download PDF"
-            >
-              <Download size={15} />
-            </button>
-            <button
-              className="pdf-action-btn pdf-close-btn"
-              onClick={onClose}
-              title="Close (Esc)"
-            >
-              <X size={17} />
-            </button>
+            <WarmTooltip content="Download PDF" side="bottom">
+              <button
+                className="pdf-action-btn"
+                onClick={handleDownload}
+                title="Download PDF"
+              >
+                <Download size={15} />
+              </button>
+            </WarmTooltip>
+            <WarmTooltip content="Close preview" shortcut="Esc" side="bottom">
+              <button
+                className="pdf-action-btn pdf-close-btn"
+                onClick={onClose}
+                title="Close (Esc)"
+              >
+                <X size={17} />
+              </button>
+            </WarmTooltip>
           </div>
         </div>
 
@@ -117,7 +128,7 @@ export default function PdfViewer({
             <iframe
               key={url}
               title={`${displayTitle} preview`}
-              src={url}
+              src={getFullWidthPdfUrl(url)}
               className="pdf-viewer-frame"
               onError={() => setError("The browser could not display this PDF.")}
             />

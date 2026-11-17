@@ -13,6 +13,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../../../components/ui/Breadcrumb";
+import WarmTooltip from "../../../components/ui/WarmTooltip";
 import "./Resources.css";
 import "./ResourcesHome.css";
 
@@ -113,53 +114,60 @@ export default function ResourcesPage() {
         </Breadcrumb>
 
         <h1 className="res-home-title">
-          <span className="res-home-badge"><Layers size={22} /></span>
-          <span className="res-home-title-text">Select Academic Year</span>
+          <Layers size={27} />
+          <span>Select Academic Year</span>
         </h1>
       </header>
 
       <div className="res-home-grid">
-        {years.map(({ year, image }, i) => (
-          <Link
+        {years.map(({ year, count, image }, i) => (
+          <WarmTooltip
             key={year}
-            to={`/resources/${encodeURIComponent(year)}`}
-            onClick={() => {
-              try {
-                localStorage.setItem("edubits_academic_year", year);
-              } catch {
-                // ignore
-              }
-            }}
-            className="res-thumb-card"
-            style={{ animationDelay: `${i * 0.06}s` }}
+            content={`View ${year} curriculum & study files (${count} resources)`}
+            side="top"
           >
-            {/* Top-to-mid Gradient ASCII */}
-            <div className="res-card-ascii-wrap" aria-hidden="true">
-              <GradientASCII
-                shape="horizon"
-                colors={["#115d62", "#1f7771", "#3e9b8f", "#5cc2b4"]}
-                density={0.65}
-                glow={0.3}
-                flicker={0.1}
-                mouseInteraction={false}
-                intro={false}
-              />
-            </div>
-
-            {/* Top Header: Title at Top, Description Below That */}
-            <div className="res-card-header">
-              <h3 className="res-card-title">{year}</h3>
-              <div className="res-card-desc">
-                <BookOpen size={13} />
-                <span>Explore Curriculum</span>
+            <Link
+              to={`/resources/${encodeURIComponent(year)}`}
+              onClick={() => {
+                try {
+                  localStorage.setItem("edubits_academic_year", year);
+                } catch {
+                  // ignore
+                }
+              }}
+              className="res-thumb-card"
+              style={{ animationDelay: `${i * 0.06}s` }}
+            >
+              {/* Top-to-mid Gradient ASCII */}
+              <div className="res-card-ascii-wrap" aria-hidden="true">
+                <GradientASCII
+                  shape="horizon"
+                  colors={["#115d62", "#1f7771", "#3e9b8f", "#5cc2b4"]}
+                  density={0.65}
+                  glow={0.3}
+                  flicker={0.1}
+                  mouseInteraction={false}
+                  intro={false}
+                />
               </div>
-            </div>
 
-            {/* Bottom half illustration fading into card floor */}
-            <div className="res-card-bottom-wrap" aria-hidden="true">
-              <img src={image} alt="" className="res-card-bottom-img" loading="lazy" />
-            </div>
-          </Link>
+              {/* Top Header: Title at Top, Description Below That */}
+              <div className="res-card-header">
+                <h3 className="res-card-title">{year}</h3>
+                <div className="res-card-desc">
+                  <BookOpen size={13} />
+                  <span>{count} {count === 1 ? "Resource" : "Resources"}</span>
+                </div>
+              </div>
+
+              {/* Bottom half illustration fading into card floor */}
+              {image && (
+                <div className="res-card-bottom-wrap" aria-hidden="true">
+                  <img src={image} alt="" className="res-card-bottom-img" loading="lazy" />
+                </div>
+              )}
+            </Link>
+          </WarmTooltip>
         ))}
         {years.length === 0 && (
           <div className="resources-empty">

@@ -5,6 +5,8 @@ import { useToast } from "../context/toastValue";
 import { Loader, ArrowRight } from "lucide-react";
 import { GoogleIcon, GitHubIcon } from "../features/homepage/BrandIcons";
 import { API_URL } from "../config/api";
+import WarmTooltip from "../components/ui/WarmTooltip";
+import AuthCutoutLayout from "./AuthCutoutLayout";
 import "./login.css";
 
 const handleOAuthLogin = (provider) => {
@@ -13,7 +15,7 @@ const handleOAuthLogin = (provider) => {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, tempLogin, isLocalhost } = useAuth();
+  const { login } = useAuth();
   const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
@@ -47,132 +49,88 @@ export default function Login() {
       login(data);
       navigate("/resources");
     } catch {
-      showToast("Could not reach the server. Is it running?", "error");
+      showToast("Could not reach the server. Please try again.", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page">
-      <section className="auth-left" aria-label="Edubits resources">
-        <Link to="/" className="auth-left-brand">
-          <img src="/images/favicon.png" alt="Edubits logo" width="40" height="40" className="auth-logo" />
-          <span>Edubits</span>
-        </Link>
-
-        <div className="auth-left-copy">
-          <h2>Let's make Engineering <span>easier.</span></h2>
-          <p>Get PYQs, Notes, Playlists, Sgpa Calculator &amp; more...</p>
-        </div>
-
-        <figure className="auth-resource-preview">
-          <img src="/images/homepage/Resources.png" alt="Preview of Edubits study resources organized by year" />
-        </figure>
-      </section>
-
-      <div className="auth-right">
-        <div className="auth-form-wrap">
-          <div className="auth-form-header">
-            <h1>Welcome back</h1>
-            <p>Log in to continue your learning journey</p>
-          </div>
-
-          <div className="auth-oauth-buttons">
-            <button
-              type="button"
-              className="btn btn-secondary auth-oauth-btn auth-oauth-btn--google"
-              onClick={() => handleOAuthLogin("google")}
-            >
-              <GoogleIcon /> Continue with Google
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary auth-oauth-btn auth-oauth-btn--github"
-              onClick={() => handleOAuthLogin("github")}
-            >
-              <GitHubIcon /> Continue with GitHub
-            </button>
-          </div>
-
-          <div className="auth-divider">or</div>
-
-          <form onSubmit={handleLogin} className="auth-form">
-            <div className="input-group">
-              <input
-                type="email"
-                placeholder=" "
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <label>Email</label>
-            </div>
-
-            <div className="input-group">
-              <input
-                type="password"
-                placeholder=" "
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <label>Password</label>
-            </div>
-
-            <button type="submit" className="btn btn-primary auth-submit-btn" disabled={loading}>
-              {loading ? (
-                <span className="btn-loading">
-                  <Loader size={16} className="spin-icon" />
-                  Waking server...
-                </span>
-              ) : (
-                "Log in"
-              )}
-            </button>
-          </form>
-
-          {isLocalhost && (
-            <div style={{ margin: "14px 0 0", textAlign: "center" }}>
-              <button
-                type="button"
-                disabled={loading}
-                onClick={async () => {
-                  setLoading(true);
-                  try {
-                    const loggedUser = await tempLogin("user");
-                    if (loggedUser) {
-                      showToast(`Logged in as ${loggedUser.name || loggedUser.email}`, "success");
-                      navigate("/resources");
-                    } else {
-                      showToast("Could not complete login", "error");
-                    }
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                className="btn btn-secondary"
-                style={{
-                  width: "100%",
-                  fontSize: "13px",
-                  padding: "8px 12px",
-                  border: "1px dashed var(--primary)",
-                  color: "var(--primary)",
-                }}
-              >
-                Local Dev: 1-Click Login
-              </button>
-            </div>
-          )}
-
-          <p className="auth-footer">
-            New to Edubits?
-            <Link to="/register">
-              Create account <ArrowRight size={14} />
-            </Link>
-          </p>
-        </div>
+    <AuthCutoutLayout
+      mode="login"
+      title="Welcome back."
+      subtitle="Log in to continue your engineering workspace."
+    >
+      <div className="auth-oauth-buttons">
+        <WarmTooltip content="Sign in with your Google account" side="top">
+          <button
+            type="button"
+            className="btn btn-secondary auth-oauth-btn"
+            onClick={() => handleOAuthLogin("google")}
+          >
+            <GoogleIcon /> Google
+          </button>
+        </WarmTooltip>
+        <WarmTooltip content="Sign in with your GitHub account" side="top">
+          <button
+            type="button"
+            className="btn btn-secondary auth-oauth-btn"
+            onClick={() => handleOAuthLogin("github")}
+          >
+            <GitHubIcon /> GitHub
+          </button>
+        </WarmTooltip>
       </div>
-    </div>
+
+      <div className="auth-divider">or</div>
+
+      <form onSubmit={handleLogin} className="auth-form">
+        <div className="input-group">
+          <input
+            type="email"
+            placeholder=" "
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <label>Email</label>
+        </div>
+
+        <div className="input-group">
+          <input
+            type="password"
+            placeholder=" "
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <label>Password</label>
+        </div>
+
+        <WarmTooltip content="Log in to your account" side="top">
+          <button
+            type="submit"
+            className="btn btn-primary auth-submit-btn"
+            disabled={loading}
+          >
+            {loading ? (
+              <span className="btn-loading">
+                <Loader size={15} className="spin-icon" />
+                Signing in...
+              </span>
+            ) : (
+              "Log in"
+            )}
+          </button>
+        </WarmTooltip>
+      </form>
+
+      <p className="auth-footer auth-footer--mobile">
+        New to Edubits?
+        <Link to="/register">
+          Create account <ArrowRight size={14} />
+        </Link>
+      </p>
+    </AuthCutoutLayout>
   );
 }

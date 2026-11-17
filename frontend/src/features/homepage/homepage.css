@@ -106,6 +106,24 @@ body.light .hp-everything {
   color: var(--text);
 }
 
+.hp-greeting-interactive {
+  display: inline-block;
+  cursor: pointer;
+  letter-spacing: normal;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  user-select: none;
+}
+
+.hp-greeting-interactive:hover {
+  opacity: 0.88;
+}
+
+.hp-greeting-interactive:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
 .hp-headline span {
   font-weight: 600;
   color: var(--primary);

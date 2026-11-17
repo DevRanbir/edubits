@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import GradientASCII from "../../../components/ui/GradientASCII";
+import WarmTooltip from "../../../components/ui/WarmTooltip";
 import { useAuth } from "../../../context/authValue";
 import { recordRecentActivity } from "../../../utils/recentActivity";
 import "./QuizPage.css";
@@ -273,10 +274,12 @@ export default function QuizPage() {
         {asciiBackground}
 
         <div className="quiz-stage-canvas quiz-launch-canvas">
-          <button className="quiz-nav-back" onClick={() => navigate("/quizzes")}>
-            <ArrowLeft size={16} />
-            <span>All topics</span>
-          </button>
+          <WarmTooltip content="Return to all topics" side="bottom">
+            <button className="quiz-nav-back" onClick={() => navigate("/quizzes")}>
+              <ArrowLeft size={16} />
+              <span>All topics</span>
+            </button>
+          </WarmTooltip>
 
           <div className="quiz-launch-hero">
             <div className="quiz-pill-badge">
@@ -292,27 +295,33 @@ export default function QuizPage() {
             </p>
 
             <div className="quiz-meta-strip">
-              <div className="quiz-meta-tag">
-                <CheckCircle2 size={15} />
-                <span><strong>{questions.length}</strong> Questions</span>
-              </div>
-              <div className="quiz-meta-tag">
-                <Clock3 size={15} />
-                <span><strong>30s</strong> Per Question</span>
-              </div>
+              <WarmTooltip content="Total questions in this quiz" side="top">
+                <div className="quiz-meta-tag">
+                  <CheckCircle2 size={15} />
+                  <span><strong>{questions.length}</strong> Questions</span>
+                </div>
+              </WarmTooltip>
+              <WarmTooltip content="30 seconds per question timer" side="top">
+                <div className="quiz-meta-tag">
+                  <Clock3 size={15} />
+                  <span><strong>30s</strong> Per Question</span>
+                </div>
+              </WarmTooltip>
             </div>
 
             <div className="quiz-launch-actions">
-              <button
-                className="quiz-cta-button"
-                onClick={() => {
-                  startTimeRef.current = Date.now();
-                  setPhase("question");
-                }}
-              >
-                <span>Start Quiz</span>
-                <ArrowRight size={17} />
-              </button>
+              <WarmTooltip content="Begin timed quiz session" side="top">
+                <button
+                  className="quiz-cta-button"
+                  onClick={() => {
+                    startTimeRef.current = Date.now();
+                    setPhase("question");
+                  }}
+                >
+                  <span>Start Quiz</span>
+                  <ArrowRight size={17} />
+                </button>
+              </WarmTooltip>
               <span className="quiz-launch-hint">Timer starts as soon as you begin</span>
             </div>
           </div>
@@ -333,20 +342,24 @@ export default function QuizPage() {
         {/* Top Header Row (Back, Topic, Question Counter, Timer) */}
         <div className="quiz-top-bar">
           <div className="quiz-top-left">
-            <button className="quiz-nav-back" onClick={() => navigate("/quizzes")}>
-              <ArrowLeft size={15} />
-              <span className="quiz-nav-topic-name">{topic?.name}</span>
-            </button>
+            <WarmTooltip content="Leave quiz and return to topics list" side="bottom">
+              <button className="quiz-nav-back" onClick={() => navigate("/quizzes")}>
+                <ArrowLeft size={15} />
+                <span className="quiz-nav-topic-name">{topic?.name}</span>
+              </button>
+            </WarmTooltip>
             <span className="quiz-top-divider">/</span>
             <span className="quiz-step-indicator">
               Question <strong>{current + 1}</strong> of {questions.length}
             </span>
           </div>
 
-          <div className={`quiz-timer-pill ${timeLeft <= 10 ? "is-urgent" : ""}`}>
-            <Clock3 size={14} />
-            <span>{formatTime(timeLeft)}</span>
-          </div>
+          <WarmTooltip content="Time remaining on this question" side="bottom">
+            <div className={`quiz-timer-pill ${timeLeft <= 10 ? "is-urgent" : ""}`}>
+              <Clock3 size={14} />
+              <span>{formatTime(timeLeft)}</span>
+            </div>
+          </WarmTooltip>
         </div>
 
         {/* Minimal Progress Line */}
@@ -425,22 +438,26 @@ export default function QuizPage() {
 
             <div className="quiz-bottom-cta">
               {revealed ? (
-                <button
-                  className="quiz-cta-button"
-                  onClick={handleNext}
-                >
-                  <span>{current + 1 >= questions.length ? "Submit Quiz" : "Next Question"}</span>
-                  {current + 1 >= questions.length ? <Send size={16} /> : <ArrowRight size={16} />}
-                </button>
+                <WarmTooltip content={current + 1 >= questions.length ? "Submit all answers & generate report" : "Move to next question"} side="top">
+                  <button
+                    className="quiz-cta-button"
+                    onClick={handleNext}
+                  >
+                    <span>{current + 1 >= questions.length ? "Submit Quiz" : "Next Question"}</span>
+                    {current + 1 >= questions.length ? <Send size={16} /> : <ArrowRight size={16} />}
+                  </button>
+                </WarmTooltip>
               ) : (
-                <button
-                  className="quiz-cta-button"
-                  onClick={handleConfirmAnswer}
-                  disabled={!multi && selected.length === 0}
-                >
-                  <span>{multi ? "Submit Answer" : "Confirm"}</span>
-                  <ArrowRight size={16} />
-                </button>
+                <WarmTooltip content={selected.length === 0 ? "Select an option first" : "Lock in your response"} side="top">
+                  <button
+                    className="quiz-cta-button"
+                    onClick={handleConfirmAnswer}
+                    disabled={!multi && selected.length === 0}
+                  >
+                    <span>{multi ? "Submit Answer" : "Confirm"}</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </WarmTooltip>
               )}
             </div>
           </div>

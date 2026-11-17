@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import WarmTooltip from "../ui/WarmTooltip";
 import "./MagneticMorphingNav.css";
 
 const MotionDiv = motion.div;
@@ -31,53 +32,58 @@ export default function MagneticMorphingNav({
           const isHovered = hoveredTab === tab.id;
 
           return (
-            <button
+            <WarmTooltip
               key={tab.id}
-              type="button"
-              onClick={() => onTabChange(tab.id)}
-              onMouseEnter={() => setHoveredTab(tab.id)}
-              onMouseLeave={() => setHoveredTab(null)}
-              className={`magnetic-nav-item ${isActive ? "active" : ""}`}
+              content={`Open ${tab.label} ${tab.count !== undefined ? `(${tab.count})` : ""}`}
+              side="bottom"
             >
-              {isActive && (
-                <MotionDiv
-                  layoutId="active-pill"
-                  className="nav-pill-active"
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                />
-              )}
-
-              {!isActive && isHovered && (
-                <AnimatePresence>
+              <button
+                type="button"
+                onClick={() => onTabChange(tab.id)}
+                onMouseEnter={() => setHoveredTab(tab.id)}
+                onMouseLeave={() => setHoveredTab(null)}
+                className={`magnetic-nav-item ${isActive ? "active" : ""}`}
+              >
+                {isActive && (
                   <MotionDiv
-                    layoutId="hover-pill"
-                    className="nav-pill-hover"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
+                    layoutId="active-pill"
+                    className="nav-pill-active"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
-                </AnimatePresence>
-              )}
-
-              <span className="nav-content">
-                {tab.icon && <span>{tab.icon}</span>}
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      padding: "1px 6px",
-                      borderRadius: "9999px",
-                      background: isActive ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)",
-                      marginLeft: 2,
-                    }}
-                  >
-                    {tab.count}
-                  </span>
                 )}
-              </span>
-            </button>
+
+                {!isActive && isHovered && (
+                  <AnimatePresence>
+                    <MotionDiv
+                      layoutId="hover-pill"
+                      className="nav-pill-hover"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    />
+                  </AnimatePresence>
+                )}
+
+                <span className="nav-content">
+                  {tab.icon && <span>{tab.icon}</span>}
+                  <span>{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        padding: "1px 6px",
+                        borderRadius: "9999px",
+                        background: isActive ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)",
+                        marginLeft: 2,
+                      }}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </span>
+              </button>
+            </WarmTooltip>
           );
         })}
       </div>

@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import GradientASCII from "../../../components/ui/GradientASCII";
+import WarmTooltip from "../../../components/ui/WarmTooltip";
 import "../styles/global.css";
 import "../styles/quizEngine.css";
 import "./ResultsPage.css";
@@ -134,16 +135,20 @@ export default function ResultsPage() {
           </div>
 
           <div className="results-actions">
-            <button
-              className="quiz-cta-button"
-              onClick={() => navigate(`/quizzes/${topic?._id || ""}`, { state: { topic } })}
-            >
-              <RotateCcw size={16} />
-              <span>Retake Quiz</span>
-            </button>
-            <Link to="/quizzes" className="results-secondary-link">
-              <span>Choose another topic</span> <ArrowRight size={15} />
-            </Link>
+            <WarmTooltip content="Retake quiz on this topic" side="top">
+              <button
+                className="quiz-cta-button"
+                onClick={() => navigate(`/quizzes/${topic?._id || ""}`, { state: { topic } })}
+              >
+                <RotateCcw size={16} />
+                <span>Retake Quiz</span>
+              </button>
+            </WarmTooltip>
+            <WarmTooltip content="Browse and choose another topic" side="top">
+              <Link to="/quizzes" className="results-secondary-link">
+                <span>Choose another topic</span> <ArrowRight size={15} />
+              </Link>
+            </WarmTooltip>
           </div>
         </section>
 

@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Download,
   Eye,
+  Maximize2,
   Sidebar,
   ChevronLeft,
   Search,
@@ -24,7 +25,7 @@ import {
 import { fetchResources } from "../../../services/resourceService";
 import { useResourcesProgress } from "../resourcesProgressContext";
 import PdfViewer from "../components/PdfViewer";
-import MagneticMorphingNav from "../../../components/layout/MagneticMorphingNav";
+import WarmTooltip from "../../../components/ui/WarmTooltip";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -44,6 +45,12 @@ const SLOTS = ["MST 1", "IMP MST 1", "MST 2", "IMP MST 2", "EST", "IMP EST"];
 
 const getAttachmentUrl = (url) =>
   url?.replace("/upload/", "/upload/fl_attachment/") || url;
+
+const getFullWidthPdfUrl = (url) => {
+  if (!url) return "";
+  const baseUrl = url.split("#")[0];
+  return `${baseUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitH&zoom=page-width&pagemode=none`;
+};
 
 function getYouTubeEmbedUrl(url) {
   if (!url) return null;
@@ -184,30 +191,45 @@ export default function SubjectPage() {
       });
   }, [playlists, decodedSubject]);
 
-  // Initial tab selection once data arrives
+  const handleAttemptedToggle = useCallback(
+    async (paperKey, current) => {
+      const next = !current;
+      try {
+        await saveProgress(paperKey, { attempted: next });
+      } catch {
+        console.error("[Resources] Attempt status could not be saved");
+      }
+    },
+    [saveProgress]
+  );
+
+  // Initial tab selection once data arrives (only open if paper is uploaded)
   const initialOpenDoneRef = useRef(false);
   useEffect(() => {
     if (loading || initialOpenDoneRef.current) return;
     initialOpenDoneRef.current = true;
 
-    // Default: find first slot with questions, or fallback to first slot
-    const firstUploaded = paperPairs.find((p) => p.questions);
-    const initialSlot = firstUploaded || paperPairs[0];
-    if (initialSlot) {
+    // Find first slot that actually has questions uploaded
+    const firstUploaded = paperPairs.find((p) => Boolean(p.questions));
+    if (firstUploaded) {
       const initialItem = {
-        id: `pyq-${initialSlot.slot}`,
+        id: `pyq-${firstUploaded.slot}`,
         type: "pyq",
-        slot: initialSlot.slot,
-        title: initialSlot.slot,
-        paperKey: initialSlot.paperKey,
-        questions: initialSlot.questions,
-        solution: initialSlot.solution,
+        slot: firstUploaded.slot,
+        title: firstUploaded.slot,
+        paperKey: firstUploaded.paperKey,
+        questions: firstUploaded.questions,
+        solution: firstUploaded.solution,
         activeVariant: "questions",
       };
       setOpenFiles([initialItem]);
       setActiveFile(initialItem);
+      // Auto-check on open
+      if (firstUploaded.paperKey && !progressMap[firstUploaded.paperKey]?.attempted) {
+        handleAttemptedToggle(firstUploaded.paperKey, false);
+      }
     }
-  }, [loading, paperPairs]);
+  }, [loading, paperPairs, progressMap, handleAttemptedToggle]);
 
   // Keyboard shortcut Ctrl+B / Cmd+B for explorer sidebar toggle
   useEffect(() => {
@@ -220,15 +242,6 @@ export default function SubjectPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-
-  const handleAttemptedToggle = async (paperKey, current) => {
-    const next = !current;
-    try {
-      await saveProgress(paperKey, { attempted: next });
-    } catch {
-      console.error("[Resources] Attempt status could not be saved");
-    }
-  };
 
   const openViewer = (resource, linkedResource, customTitle) => {
     setViewer({
@@ -265,6 +278,11 @@ export default function SubjectPage() {
       setOpenFiles((prev) => [...prev, item]);
     }
     setActiveFile(item);
+
+    // Auto check attempted status on open if not already checked
+    if (item.type === "pyq" && item.paperKey && !progressMap[item.paperKey]?.attempted) {
+      handleAttemptedToggle(item.paperKey, false);
+    }
 
     if (typeof window !== "undefined" && window.innerWidth < 768) {
       setIsExplorerOpen(false);
@@ -318,11 +336,12 @@ export default function SubjectPage() {
     },
   ];
 
-  // Filtering Explorer Items based on Search Query
+  // Filtering Explorer Items based on Search Query (Only show uploaded papers)
   const filteredPaperPairs = useMemo(() => {
-    if (!searchQuery.trim()) return paperPairs;
+    const uploadedOnly = paperPairs.filter((p) => Boolean(p.questions));
+    if (!searchQuery.trim()) return uploadedOnly;
     const q = searchQuery.toLowerCase();
-    return paperPairs.filter(
+    return uploadedOnly.filter(
       (p) =>
         p.slot.toLowerCase().includes(q) ||
         p.questions?.title?.toLowerCase().includes(q) ||
@@ -368,11 +387,6 @@ export default function SubjectPage() {
   }
 
   // Active PYQ helpers
-  const activePyqProgress =
-    activeFile?.type === "pyq" && activeFile.paperKey
-      ? progressMap[activeFile.paperKey] || { attempted: false }
-      : { attempted: false };
-
   const activePdfUrl =
     activeFile?.type === "pyq"
       ? activeFile.activeVariant === "solution" && activeFile.solution
@@ -410,62 +424,80 @@ export default function SubjectPage() {
         </Breadcrumb>
 
         <div className="subject-workspace-bar">
-          <div className="subject-workspace-title-wrap">
-            <h1 className="subject-workspace-heading">{decodedSubject}</h1>
-          </div>
+          <h1 className="subject-workspace-heading">
+            <Layers size={27} />
+            <span>{decodedSubject}</span>
+          </h1>
 
-          <div className="subject-nav-wrapper">
-            <MagneticMorphingNav
-              activeTab={activeTab}
-              onTabChange={(tabId) => {
-                setActiveTab(tabId);
-                if (tabId === "playlists" && sortedPlaylists.length > 0) {
-                  const currentIsPlaylist = activeFile?.type === "playlist";
-                  if (!currentIsPlaylist) {
-                    const firstPl = sortedPlaylists[0];
-                    handleOpenFile({
-                      id: `playlist-${firstPl._id}`,
-                      type: "playlist",
-                      title: firstPl.title,
-                      description: firstPl.description,
-                      url: firstPl.url,
-                      raw: firstPl,
-                    });
-                  }
-                } else if (tabId === "pyqs") {
-                  const currentIsPyq = activeFile?.type === "pyq";
-                  if (!currentIsPyq) {
-                    const firstUploaded = paperPairs.find((p) => p.questions) || paperPairs[0];
-                    if (firstUploaded) {
-                      handleOpenFile({
-                        id: `pyq-${firstUploaded.slot}`,
-                        type: "pyq",
-                        slot: firstUploaded.slot,
-                        title: firstUploaded.slot,
-                        paperKey: firstUploaded.paperKey,
-                        questions: firstUploaded.questions,
-                        solution: firstUploaded.solution,
-                        activeVariant: "questions",
-                      });
-                    }
-                  }
-                } else if (tabId === "notes" && notes.length > 0) {
-                  const currentIsNote = activeFile?.type === "note";
-                  if (!currentIsNote) {
-                    const firstNote = notes[0];
-                    handleOpenFile({
-                      id: `note-${firstNote._id}`,
-                      type: "note",
-                      title: firstNote.title,
-                      description: firstNote.description,
-                      url: firstNote.url,
-                      raw: firstNote,
-                    });
-                  }
-                }
-              }}
-              tabs={navTabs}
-            />
+          {/* Resource Type Switcher matching YearPage .res-year-switcher */}
+          <div className="subject-tab-switcher" role="tablist" aria-label="Resource category">
+            {navTabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <WarmTooltip
+                  key={tab.id}
+                  content={`Browse ${tab.label} (${tab.count})`}
+                  side="bottom"
+                >
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => {
+                      const tabId = tab.id;
+                      setActiveTab(tabId);
+                      if (tabId === "playlists" && sortedPlaylists.length > 0) {
+                        const currentIsPlaylist = activeFile?.type === "playlist";
+                        if (!currentIsPlaylist) {
+                          const firstPl = sortedPlaylists[0];
+                          handleOpenFile({
+                            id: `playlist-${firstPl._id}`,
+                            type: "playlist",
+                            title: firstPl.title,
+                            description: firstPl.description,
+                            url: firstPl.url,
+                            raw: firstPl,
+                          });
+                        }
+                      } else if (tabId === "pyqs") {
+                        const currentIsPyq = activeFile?.type === "pyq";
+                        if (!currentIsPyq) {
+                          const firstUploaded = paperPairs.find((p) => p.questions) || paperPairs[0];
+                          if (firstUploaded) {
+                            handleOpenFile({
+                              id: `pyq-${firstUploaded.slot}`,
+                              type: "pyq",
+                              slot: firstUploaded.slot,
+                              title: firstUploaded.slot,
+                              paperKey: firstUploaded.paperKey,
+                              questions: firstUploaded.questions,
+                              solution: firstUploaded.solution,
+                              activeVariant: "questions",
+                            });
+                          }
+                        }
+                      } else if (tabId === "notes" && notes.length > 0) {
+                        const currentIsNote = activeFile?.type === "note";
+                        if (!currentIsNote) {
+                          const firstNote = notes[0];
+                          handleOpenFile({
+                            id: `note-${firstNote._id}`,
+                            type: "note",
+                            title: firstNote.title,
+                            description: firstNote.description,
+                            url: firstNote.url,
+                            raw: firstNote,
+                          });
+                        }
+                      }
+                    }}
+                    className={`subject-tab-switcher-btn ${isActive ? "active" : ""}`}
+                  >
+                    {tab.label}
+                  </button>
+                </WarmTooltip>
+              );
+            })}
           </div>
         </div>
       </header>
@@ -477,7 +509,7 @@ export default function SubjectPage() {
           {isExplorerOpen && (
             <MotionDiv
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 290, opacity: 1 }}
+              animate={{ width: 280, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.25, ease: "easeInOut" }}
               className="tooldeck-explorer-panel"
@@ -512,7 +544,9 @@ export default function SubjectPage() {
                 {activeTab === "pyqs" &&
                   (filteredPaperPairs.length === 0 ? (
                     <div className="tooldeck-explorer-empty">
-                      No paper slots matching "{searchQuery}"
+                      {searchQuery
+                        ? `No paper slots matching "${searchQuery}"`
+                        : "No papers uploaded yet for this subject"}
                     </div>
                   ) : (
                     filteredPaperPairs.map(({ slot, paperKey, questions, solution }) => {
@@ -536,37 +570,33 @@ export default function SubjectPage() {
                             })
                           }
                           className={`tooldeck-explorer-item ${isActive ? "active" : ""}`}
-                          title={`${slot} ${questions ? "(Uploaded)" : "(Empty)"}`}
+                          title={`${slot} (Uploaded)`}
                         >
-                          <FileQuestion
-                            size={16}
-                            className={`tooldeck-explorer-item-icon ${
-                              isAttempted ? "text-green-400" : ""
-                            }`}
-                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAttemptedToggle(paperKey, isAttempted);
+                            }}
+                            className={`tooldeck-item-checkbox-btn ${isAttempted ? "checked" : ""}`}
+                            title={isAttempted ? "Attempted (click to unmark)" : "Click to mark attempted"}
+                            aria-label={isAttempted ? "Attempted" : "Mark attempted"}
+                          >
+                            {isAttempted ? (
+                              <CheckSquare size={16} className="text-teal-400" />
+                            ) : (
+                              <Square size={16} />
+                            )}
+                          </button>
                           <div className="tooldeck-explorer-item-info">
                             <span className="tooldeck-explorer-item-name">{slot}</span>
                             <span className="tooldeck-explorer-item-meta">
-                              {questions
-                                ? solution
-                                  ? "Questions • Solution"
-                                  : "Questions"
-                                : "Not uploaded"}
+                              {solution ? "Questions • Solution" : "Questions"}
                             </span>
                           </div>
-                          {isAttempted ? (
-                            <span className="tooldeck-explorer-item-badge attempted">
-                              ✓ Done
-                            </span>
-                          ) : questions ? (
-                            <span className="tooldeck-explorer-item-badge available">
-                              PDF
-                            </span>
-                          ) : (
-                            <span className="tooldeck-explorer-item-badge empty">
-                              Empty
-                            </span>
-                          )}
+                          <span className={`tooldeck-explorer-item-badge ${isAttempted ? "attempted" : "available"}`}>
+                            {isAttempted ? "Done" : "PDF"}
+                          </span>
                         </div>
                       );
                     })
@@ -662,91 +692,67 @@ export default function SubjectPage() {
 
         {/* --- RIGHT: EDITOR / WORKSPACE STAGE --- */}
         <div className="tooldeck-editor-panel">
-          {/* Header Tab Strip */}
+          {/* Header Tab Strip & Tools Merged in a Single Row */}
           <div className="tooldeck-editor-header">
-            {!isExplorerOpen && (
-              <button
-                type="button"
-                onClick={() => setIsExplorerOpen(true)}
-                className="tooldeck-editor-toggle-btn"
-                title="Show Explorer (Ctrl+B)"
-              >
-                <Sidebar size={17} />
-              </button>
-            )}
-
-            {/* Tab Strip */}
-            <div className="tooldeck-tabs-strip">
-              {openFiles.length === 0 ? (
-                <span className="tooldeck-no-tabs-hint">No open files</span>
-              ) : (
-                openFiles.map((file) => {
-                  const isTabActive = activeFile?.id === file.id;
-                  const IconComponent =
-                    file.type === "pyq"
-                      ? FileQuestion
-                      : file.type === "playlist"
-                      ? ListVideo
-                      : FileText;
-
-                  return (
-                    <div
-                      key={file.id}
-                      onClick={() => setActiveFile(file)}
-                      className={`tooldeck-tab ${isTabActive ? "active" : ""}`}
-                      title={file.title}
-                    >
-                      <IconComponent
-                        size={13}
-                        className={`tooldeck-tab-icon ${isTabActive ? "active" : ""}`}
-                      />
-                      <span className="tooldeck-tab-title">{file.title}</span>
-                      <button
-                        type="button"
-                        onClick={(e) => handleCloseFile(e, file.id)}
-                        className="tooldeck-tab-close"
-                        title="Close tab"
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* Sub Toolbar (When Active File Exists) */}
-          {activeFile && (
-            <div className="tooldeck-workspace-toolbar">
-              <div className="tooldeck-toolbar-left">
-                {activeFile.type === "pyq" && activeFile.paperKey && (
+            <div className="tooldeck-header-left">
+              {!isExplorerOpen && (
+                <WarmTooltip content="Show Explorer (Ctrl+B)" side="bottom">
                   <button
                     type="button"
-                    onClick={() =>
-                      handleAttemptedToggle(
-                        activeFile.paperKey,
-                        activePyqProgress.attempted
-                      )
-                    }
-                    className={`subject-attempt-toggle-btn ${
-                      activePyqProgress.attempted ? "done" : ""
-                    }`}
+                    onClick={() => setIsExplorerOpen(true)}
+                    className="tooldeck-editor-toggle-btn"
+                    title="Show Explorer (Ctrl+B)"
                   >
-                    {activePyqProgress.attempted ? (
-                      <CheckSquare size={13} className="text-green-400" />
-                    ) : (
-                      <Square size={13} />
-                    )}
-                    <span>
-                      {activePyqProgress.attempted ? "Attempted" : "Mark Attempted"}
-                    </span>
+                    <Sidebar size={16} />
                   </button>
+                </WarmTooltip>
+              )}
+
+              {/* Tab Strip */}
+              <div className="tooldeck-tabs-strip">
+                {openFiles.length === 0 ? (
+                  <span className="tooldeck-no-tabs-hint">No open files</span>
+                ) : (
+                  openFiles.map((file) => {
+                    const isTabActive = activeFile?.id === file.id;
+                    const IconComponent =
+                      file.type === "pyq"
+                        ? FileQuestion
+                        : file.type === "playlist"
+                        ? ListVideo
+                        : FileText;
+
+                    return (
+                      <div
+                        key={file.id}
+                        onClick={() => setActiveFile(file)}
+                        className={`tooldeck-tab ${isTabActive ? "active" : ""}`}
+                        title={file.title}
+                      >
+                        <IconComponent
+                          size={13}
+                          className={`tooldeck-tab-icon ${isTabActive ? "active" : ""}`}
+                        />
+                        <span className="tooldeck-tab-title">{file.title}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => handleCloseFile(e, file.id)}
+                          className="tooldeck-tab-close"
+                          title="Close tab"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    );
+                  })
                 )}
               </div>
+            </div>
 
-              {/* Center: Questions / Solution toggle */}
-              <div className="tooldeck-toolbar-center">
+            {/* Single Row Controls & Icon-Only Actions on Right */}
+            {activeFile && (
+              <div className="tooldeck-header-tools">
+                {/* Questions / Solution toggle */}
                 {activeFile.type === "pyq" && (
                   <div className="subject-variant-group">
                     <button
@@ -776,64 +782,66 @@ export default function SubjectPage() {
                     </button>
                   </div>
                 )}
+
+                {/* Right: Icon-only actions with no outline / no background */}
+                <div className="tooldeck-header-actions">
+                  {activePdfUrl && (
+                    <WarmTooltip content="Download PDF" side="bottom">
+                      <a
+                        href={getAttachmentUrl(activePdfUrl)}
+                        download
+                        className="tooldeck-icon-action-btn"
+                        aria-label="Download PDF"
+                      >
+                        <Download size={15} />
+                      </a>
+                    </WarmTooltip>
+                  )}
+
+                  {activePdfUrl && (
+                    <WarmTooltip content="Fullscreen" side="bottom">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (activeFile.type === "pyq") {
+                            const targetResource =
+                              activeFile.activeVariant === "solution"
+                                ? activeFile.solution
+                                : activeFile.questions;
+                            const linked =
+                              activeFile.activeVariant === "solution"
+                                ? activeFile.questions
+                                : activeFile.solution;
+                            if (targetResource) openViewer(targetResource, linked, activeFile.slot);
+                          } else if (activeFile.type === "note") {
+                            openViewer(activeFile, null, activeFile.title);
+                          }
+                        }}
+                        className="tooldeck-icon-action-btn"
+                        aria-label="Fullscreen"
+                      >
+                        <Maximize2 size={15} />
+                      </button>
+                    </WarmTooltip>
+                  )}
+
+                  {activeFile.type === "playlist" && activeFile.url && (
+                    <WarmTooltip content="Open on YouTube" side="bottom">
+                      <a
+                        href={activeFile.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="tooldeck-icon-action-btn"
+                        aria-label="Open on YouTube"
+                      >
+                        <ExternalLink size={15} />
+                      </a>
+                    </WarmTooltip>
+                  )}
+                </div>
               </div>
-
-              <div className="tooldeck-toolbar-right">
-                {/* Download PDF button if active file has PDF url */}
-                {activePdfUrl && (
-                  <a
-                    href={getAttachmentUrl(activePdfUrl)}
-                    download
-                    className="tooldeck-toolbar-btn"
-                    title="Download PDF document"
-                  >
-                    <Download size={13} />
-                    <span>Download</span>
-                  </a>
-                )}
-
-                {/* Fullscreen Modal View for PDFs */}
-                {activePdfUrl && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (activeFile.type === "pyq") {
-                        const targetResource =
-                          activeFile.activeVariant === "solution"
-                            ? activeFile.solution
-                            : activeFile.questions;
-                        const linked =
-                          activeFile.activeVariant === "solution"
-                            ? activeFile.questions
-                            : activeFile.solution;
-                        if (targetResource) openViewer(targetResource, linked, activeFile.slot);
-                      } else if (activeFile.type === "note") {
-                        openViewer(activeFile, null, activeFile.title);
-                      }
-                    }}
-                    className="tooldeck-toolbar-btn primary"
-                    title="Open Fullscreen Reader"
-                  >
-                    <Eye size={13} />
-                    <span>Fullscreen</span>
-                  </button>
-                )}
-
-                {/* External link for Playlists */}
-                {activeFile.type === "playlist" && activeFile.url && (
-                  <a
-                    href={activeFile.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="tooldeck-toolbar-btn primary"
-                  >
-                    <ExternalLink size={13} />
-                    <span>Open on YouTube</span>
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Body Stage */}
           <div className="tooldeck-workspace-body">
@@ -843,7 +851,7 @@ export default function SubjectPage() {
                 {activePdfUrl ? (
                   <div className="tooldeck-pdf-container">
                     <iframe
-                      src={`${activePdfUrl}#toolbar=0`}
+                      src={getFullWidthPdfUrl(activePdfUrl)}
                       className="tooldeck-pdf-iframe"
                       title={activePdfTitle}
                     />
@@ -914,7 +922,7 @@ export default function SubjectPage() {
               <div className="tooldeck-pdf-container">
                 {activeFile.url ? (
                   <iframe
-                    src={`${activeFile.url}#toolbar=0`}
+                    src={getFullWidthPdfUrl(activeFile.url)}
                     className="tooldeck-pdf-iframe"
                     title={activeFile.title}
                   />
@@ -941,7 +949,7 @@ export default function SubjectPage() {
                     type="button"
                     onClick={() => {
                       setActiveTab("pyqs");
-                      const firstUploaded = paperPairs.find((p) => p.questions) || paperPairs[0];
+                      const firstUploaded = paperPairs.find((p) => Boolean(p.questions));
                       if (firstUploaded) {
                         handleOpenFile({
                           id: `pyq-${firstUploaded.slot}`,

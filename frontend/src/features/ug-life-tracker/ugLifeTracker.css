@@ -1,6 +1,4 @@
-.ugl-page ::-webkit-scrollbar { width: 6px; }
-.ugl-page ::-webkit-scrollbar-track { background: var(--bg); }
-.ugl-page ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* Inherits global custom small scrollbar from variables.css */
 
 .ugl-page input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.5);

@@ -33,8 +33,6 @@ export default function SmoothDrawer({
   onOpenChange,
   activeTab = "preferences",
   onTabChange,
-  darkMode,
-  setDarkMode,
 }) {
   const { user, setUser, logout, setShowOnboarding } = useAuth();
   const navigate = useNavigate();
@@ -361,19 +359,21 @@ export default function SmoothDrawer({
                   <div className="smooth-drawer-card">
                     <div className="smooth-drawer-card-info">
                       <div className="smooth-drawer-card-icon">
-                        {darkMode ? <Moon size={18} /> : <Sun size={18} />}
+                        <Moon size={18} />
                       </div>
                       <div className="smooth-drawer-card-text">
                         <h4>Theme Mode</h4>
-                        <p>{darkMode ? "Dark Mode (Comfortable contrast)" : "Light Mode (Clean background)"}</p>
+                        <p>Dark Mode (Default)</p>
                       </div>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setDarkMode(!darkMode)}
+                      disabled
+                      title="Light mode coming soon"
                       className="smooth-drawer-btn"
+                      style={{ opacity: 0.6, cursor: "not-allowed" }}
                     >
-                      {darkMode ? "Switch to Light" : "Switch to Dark"}
+                      Light mode coming soon
                     </button>
                   </div>
 

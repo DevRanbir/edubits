@@ -8,13 +8,13 @@
   min-height: fit-content;
   max-height: 92vh;
 
-  /* Fixed Positioning to prevent layout shift */
+  /* Floating sidebar vertically centered on the left */
   position: fixed;
   left: 0;
   top: 50%;
   transform: translateY(-52%);
 
-  /* "]" shape attached to left */
+  /* Rounded pill shape attached to left edge */
   border: 1px solid var(--border, #2a2a2a);
   border-left: none;
   border-radius: 0 22px 22px 0;
@@ -29,9 +29,8 @@
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-width: none; /* Hide scrollbar for Chrome, Safari and Opera */
-  -ms-overflow-style: none; /* IE and Edge */
-
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   box-shadow: 4px 0 24px -4px rgba(0, 0, 0, 0.3);
 }
 
@@ -111,6 +110,23 @@ body.quiz-is-live .sidebar > * {
 
 .sidebar-theme-switch:hover {
   opacity: 1;
+}
+
+.sidebar-theme-switch-wrapper {
+  position: relative;
+  display: inline-flex;
+  cursor: not-allowed;
+}
+
+.sidebar-theme-switch:disabled,
+.sidebar-theme-switch.disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.sidebar-theme-switch:disabled:hover,
+.sidebar-theme-switch.disabled:hover {
+  opacity: 0.75;
 }
 
 .sidebar-theme-switch.light {
@@ -367,7 +383,7 @@ body.quiz-is-live .sidebar > * {
   margin-top: 1px;
 }
 
-/* Unauthenticated 1-Click Login (Localhost) Button */
+/* Unauthenticated Add Account Button */
 .sidebar-add-account {
   border: 1px dashed rgba(255, 255, 255, 0.2);
   border-radius: 8px;
@@ -375,8 +391,6 @@ body.quiz-is-live .sidebar > * {
   width: calc(100% - 16px) !important;
   padding-left: 10px !important;
   height: 38px !important;
-  cursor: pointer;
-  transition: all 0.18s ease;
 }
 
 .sidebar-add-account:hover {
@@ -384,46 +398,13 @@ body.quiz-is-live .sidebar > * {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-body.light .sidebar-add-account {
-  border-color: rgba(0, 0, 0, 0.2);
-  color: #0b1413;
-}
-
-body.light .sidebar-add-account:hover {
-  border-color: rgba(0, 0, 0, 0.45);
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-/* Unauthenticated Log In Button */
-.sidebar-login-btn {
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
-  background: var(--surface-2, rgba(255, 255, 255, 0.04));
-  color: var(--text, #f0f0f8);
-  border-radius: 8px;
-  margin: 0 8px;
-  width: calc(100% - 16px) !important;
-  padding-left: 10px !important;
-  height: 38px !important;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.sidebar-login-btn:hover {
-  border-color: var(--primary, #3e9b8f);
-  background: var(--primary-subtle, rgba(62, 155, 143, 0.12));
-  color: var(--primary, #3e9b8f);
-}
-
-body.light .sidebar-login-btn {
-  border-color: rgba(0, 0, 0, 0.08);
-  background: #ffffff;
-  color: #0b1413;
-}
-
-body.light .sidebar-login-btn:hover {
-  border-color: #287d72;
-  background: rgba(40, 125, 114, 0.08);
-  color: #287d72;
+.sidebar-brand-logo-img {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 5px;
+  object-fit: contain;
+  display: block;
 }
 
 /* Mobile Toggle Buttons */
@@ -472,7 +453,9 @@ body.light .sidebar-login-btn:hover {
 /* Light Mode Overrides */
 body.light .sidebar {
   background-color: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: none;
+  border-radius: 0 22px 22px 0;
   box-shadow: 4px 0 24px -4px rgba(0, 0, 0, 0.08);
 }
 

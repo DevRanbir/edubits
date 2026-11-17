@@ -12,11 +12,90 @@ import {
 import { useAuth } from "../../context/authValue";
 import { API_URL } from "../../config/api";
 import { GoogleIcon } from "./BrandIcons";
-import { features } from "./homeData";
 import GradientASCII from "../../components/ui/GradientASCII";
 import SiteFooterLogo from "../../components/layout/SiteFooterLogo";
+import LandingParentSquare from "./LandingParentSquare";
+import WarmTooltip from "../../components/ui/WarmTooltip";
 import { getRecentActivities, formatTimeAgo } from "../../utils/recentActivity";
 import "./homepage.css";
+
+const GREETINGS = [
+  // Indian Languages
+  { text: "स्वागत है", lang: "Hindi", translit: "swaagat hai" },
+  { text: "पुनः स्वागत है", lang: "Hindi (Formal)", translit: "Punah swaagat hai" },
+  { text: "स्वागतम्", lang: "Sanskrit", translit: "Swagatam" },
+  { text: "ਜੀ ਆਇਆਂ ਨੂੰ", lang: "Punjabi", translit: "Ji aayan nu" },
+  { text: "ਮੁੜ ਸਵਾਗਤ ਹੈ", lang: "Punjabi", translit: "Murh swaagat hai" },
+  { text: "আবার স্বাগতম", lang: "Bengali", translit: "Abar shagotom" },
+  { text: "পুনরায় স্বাগতম", lang: "Bengali (Formal)", translit: "Punoray shagotom" },
+  { text: "ફરી સ્વાગત છે", lang: "Gujarati", translit: "Fari swaagat chhe" },
+  { text: "ફરીથી સ્વાગત છે", lang: "Gujarati", translit: "Farithi swaagat chhe" },
+  { text: "फेर से स्वागत बा", lang: "Bhojpuri", translit: "Pher se swagat ba" },
+  { text: "फेरु स्वागत छै", lang: "Maithili", translit: "Pheru swagat chhai" },
+  { text: "फेर से स्वागत छै", lang: "Magahi", translit: "Pher se swagat chhai" },
+  { text: "ମୁଁ ପୁଣି ସ୍ୱାଗତ କରୁଛି", lang: "Odia", translit: "Mu puni swagat karuchhi" },
+  { text: "ପୁଣିଥରେ ସ୍ୱାଗତ", lang: "Odia", translit: "Puni thare swagat" },
+  { text: "আকৌ আদৰণি", lang: "Assamese", translit: "Aakou adoroni" },
+  { text: "পুনৰ স্বাগতম", lang: "Assamese", translit: "Punar swagatam" },
+  { text: "மீண்டும் நல்வரவு", lang: "Tamil", translit: "Meendum nalvaravu" },
+  { text: "மீண்டும் வருக", lang: "Tamil", translit: "Meendum varuga" },
+  { text: "మళ్ళీ స్వాగతం", lang: "Telugu", translit: "Malli swagatham" },
+  { text: "మరోసారి స్వాగతం", lang: "Telugu", translit: "Marosari swagatham" },
+  { text: "ಮತ್ತೊಮ್ಮೆ ಸ್ವಾಗತ", lang: "Kannada", translit: "Mattomme swagatha" },
+  { text: "ಮತ್ತೆ ಸ್ವಾಗತ", lang: "Kannada", translit: "Matte swagatha" },
+  { text: "വീണ്ടും സ്വാഗതം", lang: "Malayalam", translit: "Veendum swagatham" },
+  { text: "മറുപടി സ്വാഗതം", lang: "Malayalam", translit: "Marupadi swagatham" },
+  { text: "पुन्हा स्वागत आहे", lang: "Marathi", translit: "Punha swagat aahe" },
+  { text: "पुन्हा एकदा स्वागत", lang: "Marathi", translit: "Punha ekda swagat" },
+  { text: "ફરી પધારો", lang: "Gujarati", translit: "Fari padhaaro" },
+  { text: "خوش آمدید", lang: "Urdu", translit: "Khush aamdeed" },
+  { text: "دوبارہ خوش آمدید", lang: "Urdu", translit: "Dobara khush aamdeed" },
+  { text: "دوبارہ ڀليڪار", lang: "Sindhi", translit: "Dobara bhali kar" },
+  { text: "पुनः स्वागत", lang: "Konkani", translit: "Punha swagat" },
+  { text: "دوبارہ خوش آمدید", lang: "Kashmiri", translit: "Dobara khush aamdeed" },
+  { text: "फेर त स्वागत छै", lang: "Dogri", translit: "Pher ta swagat chhai" },
+  { text: "ᱫᱚᱦᱲᱟ ᱥᱟᱜᱟᱛ", lang: "Santali", translit: "Dohora sagat" },
+  { text: "फेर से स्वागत", lang: "Haryanvi", translit: "Pher te swagat" },
+  { text: "फेर पधारो", lang: "Rajasthani", translit: "Pher padhaaro" },
+  { text: "फेर स्वागत", lang: "Chhattisgarhi", translit: "Pher swagat" },
+  { text: "ફરી આવકાર", lang: "Gujarati", translit: "Fari aavkaar" },
+
+  // Indian Regional / Cultural Variations
+  { text: "राम राम सा", lang: "Rajasthani", translit: "Ram Ram sa" },
+  { text: "खम्मा घणी", lang: "Marwari", translit: "Khamma Ghani" },
+  { text: "राम राम", lang: "Haryanvi", translit: "Ram Ram" },
+  { text: "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ", lang: "Punjabi", translit: "Sat Sri Akaal" },
+  { text: "நல்வரவு", lang: "Tamil", translit: "Nalvaravu" },
+  { text: "స్వాగతం", lang: "Telugu", translit: "Swagatham" },
+  { text: "ಸ್ವಾಗತ", lang: "Kannada", translit: "Swagatha" },
+  { text: "സ്വാഗതം", lang: "Malayalam", translit: "Swagatham" },
+  { text: "স্বাগতম", lang: "Bengali", translit: "Shagotom" },
+  { text: "સ્વાગત છે", lang: "Gujarati", translit: "Swaagat chhe" },
+  { text: "ସ୍ୱାଗତ", lang: "Odia", translit: "Swagata" },
+  { text: "स्वागत आहे", lang: "Marathi", translit: "Swagat aahe" },
+  { text: "स्वागत बा", lang: "Bhojpuri", translit: "Swagat ba" },
+  { text: "स्वागतम्", lang: "Sanskrit", translit: "Swagatam" },
+
+  // International
+  { text: "¡Bienvenido de nuevo!", lang: "Spanish", translit: "Bienvenido de nuevo" },
+  { text: "Welcome back", lang: "English", translit: "Welcome back" },
+  { text: "Bienvenue à nouveau", lang: "French", translit: "Bienvenue à nouveau" },
+  { text: "Willkommen zurück", lang: "German", translit: "Willkommen zurück" },
+  { text: "おかえりなさい", lang: "Japanese", translit: "Okaerinasai" },
+  { text: "다시 오신 환영합니다", lang: "Korean", translit: "Dasi osin geoseul hwanyeonghamnida" },
+  { text: "欢迎回来", lang: "Chinese", translit: "Huanying huilai" },
+  { text: "مرحباً بعودتك", lang: "Arabic", translit: "Marhaban bi awdatik" },
+  { text: "Добро пожаловать обратно", lang: "Russian", translit: "Dobro pozhalovat obratno" },
+  { text: "Hoş geldin", lang: "Turkish", translit: "Hos geldin" },
+  { text: "Bem-vindo de volta", lang: "Portuguese", translit: "Bem-vindo de volta" },
+  { text: "Καλώς ήρθες ξανά", lang: "Greek", translit: "Kalos irthes xana" },
+  { text: "Tervetuloa takaisin", lang: "Finnish", translit: "Tervetuloa takaisin" },
+  { text: "Välkommen tillbaka", lang: "Swedish", translit: "Valkommen tillbaka" },
+  { text: "Welkom terug", lang: "Dutch", translit: "Welkom terug" },
+  { text: "ยินดีต้อนรับกลับ", lang: "Thai", translit: "Yin dee ton rap glap" },
+  { text: "Selamat datang kembali", lang: "Indonesian", translit: "Selamat datang kembali" },
+  { text: "Maligayang pagbabalik", lang: "Filipino", translit: "Maligayang pagbabalik" },
+];
 
 const SUBJECT_IMAGES = {
   "Mathematics-I": "/images/maths2.svg",
@@ -81,6 +160,32 @@ function MemberView({ user }) {
   useEffect(() => {
     setRecentActivities(getRecentActivities(user));
   }, [user]);
+
+  // Multilingual greeting rotating on each page refresh
+  const [greetingIndex, setGreetingIndex] = useState(() => {
+    try {
+      const stored = localStorage.getItem("edubits_dashboard_greeting_idx");
+      const nextIdx = stored !== null ? (parseInt(stored, 10) + 1) % GREETINGS.length : 0;
+      localStorage.setItem("edubits_dashboard_greeting_idx", String(nextIdx));
+      return nextIdx;
+    } catch {
+      return 0;
+    }
+  });
+
+  const currentGreeting = GREETINGS[greetingIndex] || GREETINGS[0];
+
+  const cycleGreeting = () => {
+    setGreetingIndex((prev) => {
+      const next = (prev + 1) % GREETINGS.length;
+      try {
+        localStorage.setItem("edubits_dashboard_greeting_idx", String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   const userName = user?.name || user?.email?.split("@")[0] || "Student";
   const defaultYear =
@@ -147,7 +252,26 @@ function MemberView({ user }) {
       {/* Hero Header */}
       <header className="hp-hero hp-member-hero">
         <h1 className="hp-headline">
-          Welcome back, <br />
+          <WarmTooltip
+            content={`Translates to "${currentGreeting.translit}"  in ${currentGreeting.lang} - Click to change`}
+            side="top"
+          >
+            <span
+              className="hp-greeting-interactive"
+              onClick={cycleGreeting}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  cycleGreeting();
+                }
+              }}
+            >
+              {currentGreeting.text}
+            </span>
+          </WarmTooltip>
+          , <br />
           <span>{userName}</span>
         </h1>
         <p className="hp-tagline">Everything you need for engineering, in one sleek workspace.</p>
@@ -355,72 +479,7 @@ function MemberView({ user }) {
 }
 
 function LandingView() {
-  return (
-    <main className="hp-main">
-      <header className="hp-hero">
-        <h1 className="hp-headline">
-          Engineering made
-          <br />
-          <span>easier.</span>
-        </h1>
-        <p className="hp-tagline">
-          Get PYQs, Notes, Playlists, Sgpa Calculator &amp; more...
-        </p>
-        <AuthActions />
-      </header>
-
-      <section className="hp-section" aria-label="Edubits reach">
-        <p className="hp-eyebrow">Growing with every semester</p>
-        <div className="hp-proof">
-          <div className="hp-proof-item">
-            <span className="hp-proof-value">750+</span>
-            <span className="hp-proof-label">students using Edubits</span>
-          </div>
-          <div className="hp-proof-item">
-            <span className="hp-proof-value">~6K</span>
-            <span className="hp-proof-label">visits in an average month</span>
-          </div>
-          <div className="hp-proof-item hp-proof-item--peak">
-            <span className="hp-proof-value">~10K</span>
-            <span className="hp-proof-label">visits last end sem</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="hp-section hp-section--tight" aria-label="Product preview">
-        <figure className="hp-preview">
-          <img src="/images/homepage/Resources.png" alt="Edubits Resources page" decoding="async" />
-        </figure>
-      </section>
-
-      <section className="hp-section" aria-label="Edubits features">
-        {features.map((feature, i) => (
-          <article key={feature.id} className={`hp-feature${i % 2 ? " hp-feature--reverse" : ""}`}>
-            <div className="hp-feature-copy">
-              <p className="hp-eyebrow">{feature.eyebrow}</p>
-              <h3 className="hp-feature-title">{feature.title}</h3>
-              <p className="hp-feature-desc">{feature.desc}</p>
-            </div>
-            <div className="hp-preview">
-              <img src={feature.image} alt={feature.alt} loading="lazy" decoding="async" />
-            </div>
-          </article>
-        ))}
-      </section>
-
-      <section className="hp-section" aria-labelledby="hp-cta-title">
-        <div className="hp-cta">
-          <h2 id="hp-cta-title" className="hp-section-title">
-            Make engineering <span className="hp-cta-accent">easier.</span>
-          </h2>
-          <p className="hp-cta-text">
-            Create an account to access everything for <span className="hp-cta-accent">free.</span>
-          </p>
-          <AuthActions />
-        </div>
-      </section>
-    </main>
-  );
+  return <LandingParentSquare />;
 }
 
 export default function HomePage() {
@@ -428,8 +487,14 @@ export default function HomePage() {
 
   return (
     <div className="hp-everything">
-      {user ? <MemberView user={user} /> : <LandingView />}
-      <SiteFooterLogo />
+      {user ? (
+        <>
+          <MemberView user={user} />
+          <SiteFooterLogo />
+        </>
+      ) : (
+        <LandingView />
+      )}
     </div>
   );
 }

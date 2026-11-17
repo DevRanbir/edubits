@@ -45,7 +45,7 @@ function AppInner() {
         <Suspense fallback={null}>
           <Sidebar />
         </Suspense>
-        <div className={`app-content ${isHome ? "" : "page"}`}>
+        <div className={`app-content ${isHome || isAuthPage ? "" : "page"}`}>
           <Suspense fallback={<div className="route-loader" aria-label="Loading page" />}>
             <Routes>
               <Route path="/"         element={<HomePage />} />
@@ -97,7 +97,7 @@ function AppInner() {
       <Suspense fallback={null}>
         <Sidebar />
       </Suspense>
-      <div className={`app-content ${isHome ? "" : "page"}`}>
+      <div className={`app-content ${isHome || isAuthPage ? "" : "page"}`}>
         <Suspense fallback={<div className="route-loader" aria-label="Loading page" />}>
           <Routes>
             <Route path="/" element={<HomePage />} />

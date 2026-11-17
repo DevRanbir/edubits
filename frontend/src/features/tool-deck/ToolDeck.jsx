@@ -33,6 +33,7 @@ import PdfViewer from "../resources/components/PdfViewer";
 import SGPA from "../sgpa/SGPA";
 import CGPA from "../cgpa/CGPA";
 import InternalMarksPage from "../internalMarks/InternalMarksPage";
+import WarmTooltip from "../../components/ui/WarmTooltip";
 import "../sgpa/pages/Sgpapage.css";
 import "../cgpa/cgpa.css";
 import "../internalMarks/InternalMarksPage.css";
@@ -249,16 +250,19 @@ export default function ToolDeck({ initialTab = "todos" }) {
       const data = await fetchResources({ type: "notes" });
       const fetched = data || [];
       setNotes(fetched);
-      if (fetched.length > 0 && openFiles.length === 0) {
-        setOpenFiles([fetched[0]]);
-        setActiveFile(fetched[0]);
-      }
+      setOpenFiles((prev) => {
+        if (prev.length === 0 && fetched.length > 0) {
+          setActiveFile(fetched[0]);
+          return [fetched[0]];
+        }
+        return prev;
+      });
     } catch (err) {
       console.warn("Could not load notes:", err);
     } finally {
       setLoadingNotes(false);
     }
-  }, [openFiles.length]);
+  }, []);
 
   useEffect(() => {
     loadNotes();
@@ -385,9 +389,11 @@ export default function ToolDeck({ initialTab = "todos" }) {
                 />
                 <div className="tooldeck-search-actions">
                   <span className="tooldeck-kbd">ENTER</span>
-                  <button type="submit" className="tooldeck-search-btn" title="Add task">
-                    <Plus size={18} />
-                  </button>
+                  <WarmTooltip content="Add new task" shortcut="↵" side="top">
+                    <button type="submit" className="tooldeck-search-btn" title="Add task">
+                      <Plus size={18} />
+                    </button>
+                  </WarmTooltip>
                 </div>
               </form>
               <div className="tooldeck-footer-hint">#Start typing to create a new task.</div>
@@ -416,14 +422,19 @@ export default function ToolDeck({ initialTab = "todos" }) {
 
             <div className="tooldeck-filter-pills">
               {["all", "pending", "completed"].map((f) => (
-                <button
+                <WarmTooltip
                   key={f}
-                  type="button"
-                  onClick={() => setFilter(f)}
-                  className={`tooldeck-filter-btn ${filter === f ? "active" : ""}`}
+                  content={`Show ${f} tasks`}
+                  side="bottom"
                 >
-                  {f.charAt(0).toUpperCase() + f.slice(1)}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setFilter(f)}
+                    className={`tooldeck-filter-btn ${filter === f ? "active" : ""}`}
+                  >
+                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                  </button>
+                </WarmTooltip>
               ))}
             </div>
           </div>
@@ -631,14 +642,16 @@ export default function ToolDeck({ initialTab = "todos" }) {
               >
                 <div className="tooldeck-explorer-head">
                   <span className="tooldeck-explorer-title">EXPLORER</span>
-                  <button
-                    type="button"
-                    onClick={() => setIsExplorerOpen(false)}
-                    className="tooldeck-explorer-close-btn"
-                    title="Collapse Explorer (Ctrl+B)"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
+                  <WarmTooltip content="Collapse Explorer" shortcut="Ctrl+B" side="right">
+                    <button
+                      type="button"
+                      onClick={() => setIsExplorerOpen(false)}
+                      className="tooldeck-explorer-close-btn"
+                      title="Collapse Explorer (Ctrl+B)"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                  </WarmTooltip>
                 </div>
 
                 <div className="tooldeck-explorer-search">
@@ -656,14 +669,15 @@ export default function ToolDeck({ initialTab = "todos" }) {
 
                 <div className="tooldeck-explorer-years">
                   {["All", "1st Year", "2nd Year", "3rd Year", "4th Year"].map((yr) => (
-                    <button
-                      key={yr}
-                      type="button"
-                      onClick={() => setSelectedYear(yr)}
-                      className={`tooldeck-explorer-year-btn ${selectedYear === yr ? "active" : ""}`}
-                    >
-                      {yr === "All" ? "All" : yr.replace(" Year", "Y")}
-                    </button>
+                    <WarmTooltip key={yr} content={`Filter by ${yr}`} side="bottom">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedYear(yr)}
+                        className={`tooldeck-explorer-year-btn ${selectedYear === yr ? "active" : ""}`}
+                      >
+                        {yr === "All" ? "All" : yr.replace(" Year", "Y")}
+                      </button>
+                    </WarmTooltip>
                   ))}
                 </div>
 
@@ -704,25 +718,29 @@ export default function ToolDeck({ initialTab = "todos" }) {
           <div className="tooldeck-editor-panel">
             <div className="tooldeck-editor-header">
               {!isExplorerOpen && (
-                <button
-                  type="button"
-                  onClick={() => setIsExplorerOpen(true)}
-                  className="tooldeck-editor-toggle-btn"
-                  title="Show Explorer (Ctrl+B)"
-                >
-                  <Sidebar size={17} />
-                </button>
+                <WarmTooltip content="Show Explorer" shortcut="Ctrl+B" side="right">
+                  <button
+                    type="button"
+                    onClick={() => setIsExplorerOpen(true)}
+                    className="tooldeck-editor-toggle-btn"
+                    title="Show Explorer (Ctrl+B)"
+                  >
+                    <Sidebar size={17} />
+                  </button>
+                </WarmTooltip>
               )}
 
               <div className="tooldeck-file-menu-wrap" ref={menuRef}>
-                <button
-                  type="button"
-                  onClick={() => setShowFileMenu(!showFileMenu)}
-                  className={`tooldeck-file-menu-btn ${showFileMenu ? "active" : ""}`}
-                >
-                  <FolderOpen size={15} />
-                  <span>File</span>
-                </button>
+                <WarmTooltip content="File operations" side="bottom">
+                  <button
+                    type="button"
+                    onClick={() => setShowFileMenu(!showFileMenu)}
+                    className={`tooldeck-file-menu-btn ${showFileMenu ? "active" : ""}`}
+                  >
+                    <FolderOpen size={15} />
+                    <span>File</span>
+                  </button>
+                </WarmTooltip>
 
                 <AnimatePresence>
                   {showFileMenu && (
@@ -794,55 +812,52 @@ export default function ToolDeck({ initialTab = "todos" }) {
                   })
                 )}
               </div>
-            </div>
 
-            {activeFile && (
-              <div className="tooldeck-workspace-toolbar">
-                <div className="tooldeck-toolbar-left">
-                  <span className="tooldeck-badge-subject">{activeFile.subject || "Subject"}</span>
-                  {activeFile.year && (
-                    <span className="tooldeck-badge-year">{activeFile.year}</span>
-                  )}
-                </div>
-
-                <div className="tooldeck-toolbar-right">
+              {activeFile && (
+                <div className="tooldeck-header-actions">
                   {activeFile.url && (
-                    <a
-                      href={getAttachmentUrl(activeFile.url)}
-                      download
-                      className="tooldeck-toolbar-btn"
-                      title="Download PDF document"
-                    >
-                      <Download size={14} />
-                      <span className="hidden-mobile">Download</span>
-                    </a>
+                    <WarmTooltip content="Download PDF document" side="bottom">
+                      <a
+                        href={getAttachmentUrl(activeFile.url)}
+                        download
+                        className="tooldeck-icon-action-btn"
+                        title="Download PDF document"
+                        aria-label="Download"
+                      >
+                        <Download size={16} />
+                      </a>
+                    </WarmTooltip>
                   )}
 
                   {activeFile.url && (
-                    <button
-                      type="button"
-                      onClick={() => setPdfViewer({ open: true, url: activeFile.url, title: activeFile.title })}
-                      className="tooldeck-toolbar-btn primary"
-                      title="Open Fullscreen PDF Viewer"
-                    >
-                      <Eye size={14} />
-                      <span className="hidden-mobile">Fullscreen</span>
-                    </button>
+                    <WarmTooltip content="Open Fullscreen PDF Viewer" side="bottom">
+                      <button
+                        type="button"
+                        onClick={() => setPdfViewer({ open: true, url: activeFile.url, title: activeFile.title })}
+                        className="tooldeck-icon-action-btn"
+                        title="Open Fullscreen PDF Viewer"
+                        aria-label="Fullscreen"
+                      >
+                        <Eye size={16} />
+                      </button>
+                    </WarmTooltip>
                   )}
 
                   {activeFile.subject && activeFile.year && (
-                    <Link
-                      to={`/resources/${encodeURIComponent(activeFile.year)}/${encodeURIComponent(activeFile.subject)}`}
-                      className="tooldeck-toolbar-btn"
-                      title="Open Subject in Resources"
-                    >
-                      <ExternalLink size={14} />
-                      <span className="hidden-mobile">Subject</span>
-                    </Link>
+                    <WarmTooltip content="Open Subject in Resources" side="bottom">
+                      <Link
+                        to={`/resources/${encodeURIComponent(activeFile.year)}/${encodeURIComponent(activeFile.subject)}`}
+                        className="tooldeck-icon-action-btn"
+                        title="Open Subject in Resources"
+                        aria-label="Subject"
+                      >
+                        <ExternalLink size={16} />
+                      </Link>
+                    </WarmTooltip>
                   )}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <div className="tooldeck-workspace-body">
               {activeFile ? (
