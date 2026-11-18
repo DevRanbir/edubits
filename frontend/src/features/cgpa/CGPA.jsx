@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import "./cgpa.css";
+import { API_URL } from "../../config/api";
 import { Trash2, Plus, Calculator, RotateCcw, X, BarChart2, Eraser } from "lucide-react";
 
 const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
@@ -137,11 +138,34 @@ function TargetSimulator() {
     }
   });
 
+  useEffect(() => {
+    const applyRemote = () => {
+      try {
+        const saved = localStorage.getItem("simForm");
+        if (saved) setForm(JSON.parse(saved));
+      } catch { /* ignore malformed saved values */ }
+    };
+    window.addEventListener("edubits-settings-loaded", applyRemote);
+    return () => window.removeEventListener("edubits-settings-loaded", applyRemote);
+  }, []);
+
   const [result, setResult] = useState(null);
 
   const set = (k, v) => setForm((f) => {
     const next = { ...f, [k]: v };
     localStorage.setItem("simForm", JSON.stringify(next));
+    const settings = { simForm: next };
+    for (const key of ["subjects", "sgpaList", "edubits_pinned_tasks", "edubits_subtasks_map"]) {
+      try {
+        const value = localStorage.getItem(key);
+        if (value !== null) settings[key] = JSON.parse(value);
+      } catch { /* ignore malformed saved values */ }
+    }
+    fetch(`${API_URL}/users/me/settings`, {
+      method: "PUT", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ settings }),
+    }).catch(() => {});
     return next;
   });
 

@@ -15,7 +15,7 @@
 - Backend needs MongoDB reachable before server start; `connectDB()` runs at boot.
 
 ## Conventions / gotchas
-- CORS in `backend/server.js` allows the exact `FRONTEND_URL`; non-production mode also allows `http://localhost:5173`. Vercel preview origins need to be configured as `FRONTEND_URL`; there is no wildcard or `CORS_ORIGINS` support.
+- CORS in `backend/server.js` allows the exact `FRONTEND_URL`; non-production mode also allows Vite at `http://localhost:5173` and `http://localhost:5174`. Vercel preview origins need to be configured as `FRONTEND_URL`; there is no wildcard or `CORS_ORIGINS` support.
 - Rate limit: 150 req / 15 min per authenticated user or anonymous client IP in `server.js`.
 - Resource and avatar uploads use in-memory Multer validation and Cloudinary storage; no upload route writes to or serves `backend/uploads/`.
 - Frontend routing is defined in `src/app/App.jsx` (lazy imports); `src/app/routes.jsx` is an intentional empty stub.

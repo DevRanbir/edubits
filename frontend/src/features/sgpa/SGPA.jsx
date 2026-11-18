@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import "./sgpa.css";
+import { API_URL } from "../../config/api";
 import { Trash2, Plus, Save, RotateCcw, X } from "lucide-react";
 
 const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
@@ -83,6 +84,7 @@ function SGPADisplay({ value }) {
 }
 
 export default function SGPA({ setSgpaList, sgpaCount }) {
+  const settingsLoaded = useRef(false);
   const [isExample, setIsExample] = useState(() => {
     try {
       return !localStorage.getItem("subjects");
@@ -98,12 +100,37 @@ export default function SGPA({ setSgpaList, sgpaCount }) {
     return EXAMPLE_SUBJECTS;
   });
 
+  useEffect(() => {
+    const applyRemote = () => {
+      settingsLoaded.current = true;
+      try {
+        const saved = localStorage.getItem("subjects");
+        if (saved) setSubjects(JSON.parse(saved));
+      } catch { /* ignore malformed saved values */ }
+    };
+    window.addEventListener("edubits-settings-loaded", applyRemote);
+    return () => window.removeEventListener("edubits-settings-loaded", applyRemote);
+  }, []);
+
   const [saved, setSaved] = useState(false);
   const liveResult = computeSGPA(subjects);
 
   useEffect(() => {
+    if (!settingsLoaded.current) return;
     try {
       localStorage.setItem("subjects", JSON.stringify(subjects));
+      const settings = { subjects };
+      for (const key of ["simForm", "sgpaList", "edubits_pinned_tasks", "edubits_subtasks_map"]) {
+        try {
+          const value = localStorage.getItem(key);
+          if (value !== null) settings[key] = JSON.parse(value);
+        } catch { /* ignore malformed saved values */ }
+      }
+      fetch(`${API_URL}/users/me/settings`, {
+        method: "PUT", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings }),
+      }).catch(() => {});
     } catch {
       // The calculator remains usable when browser storage is unavailable.
     }

@@ -91,21 +91,13 @@ app.use(helmet({
     : false,
 }));
 
-// Give each request a safe correlation ID and prevent controller catch blocks
-// from returning database or infrastructure error details to clients.
+// Give each request a safe correlation ID.
 app.use((req, res, next) => {
   const forwardedRequestId = req.get("X-Request-ID");
   req.requestId = /^[0-9a-f-]{36}$/i.test(forwardedRequestId || "")
     ? forwardedRequestId
     : randomUUID();
   res.setHeader("X-Request-ID", req.requestId);
-  const json = res.json.bind(res);
-  res.json = (body) => {
-    if (res.statusCode >= 400) {
-      body = { error: "Request failed", requestId: req.requestId };
-    }
-    return json(body);
-  };
   next();
 });
 
@@ -117,7 +109,7 @@ const allowedOrigins = new Set(
     process.env.FRONTEND_URL,
     // Local development only
     ...(process.env.NODE_ENV !== "production"
-      ? ["http://localhost:5173"]
+      ? ["http://localhost:5173", "http://localhost:5174"]
       : []),
   ]
     .map((o) => (o || "").trim().replace(/\/$/, ""))
@@ -197,8 +189,11 @@ app.use((err, req, res, next) => {
     err?.name === "MulterError" ? 400
     : err?.status >= 400 && err?.status < 500 ? err.status
     : 500;
+  const safeClientMessage = status < 500 && typeof err?.message === "string"
+    ? err.message
+    : "Request failed";
   res.status(status).json({
-    error: "Request failed",
+    error: safeClientMessage,
     requestId: req.requestId,
   });
 });

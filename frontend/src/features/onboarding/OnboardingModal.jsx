@@ -115,6 +115,14 @@ export default function OnboardingModal({ isOpen, onClose }) {
         }).catch((err) => console.warn("Profile update notice:", err));
       }
 
+      const academicResponse = await fetch(`${API_URL}/users/me`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ academicYear, academicProgram }),
+      });
+      if (!academicResponse.ok) throw new Error("Could not save academic details");
+
       // 3. Mark onboarding complete in backend
       await fetch(`${API_URL}/auth/onboarding/complete`, {
         method: "POST",

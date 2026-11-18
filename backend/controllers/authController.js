@@ -16,7 +16,7 @@ exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     res.json({
-      user: { name: user.name, email: user.email, avatar: user.avatar, role: user.role, onboardingCompleted: user.onboardingCompleted },
+      user: { name: user.name, email: user.email, avatar: user.avatar, role: user.role, onboardingCompleted: user.onboardingCompleted, academicYear: user.academicYear, academicProgram: user.academicProgram },
     });
   } catch (err) {
     res.status(500).json({ message: "Request failed" });
@@ -42,7 +42,7 @@ exports.register = async (req, res) => {
     const token = generateToken(user._id, user.tokenVersion);
     res.cookie("edubits_auth", token, sessionCookieOptions());
     res.status(201).json({
-      user: { name: user.name, email: user.email, avatar: user.avatar, role: user.role, onboardingCompleted: user.onboardingCompleted },
+      user: { name: user.name, email: user.email, avatar: user.avatar, role: user.role, onboardingCompleted: user.onboardingCompleted, academicYear: user.academicYear, academicProgram: user.academicProgram },
     });
   } catch (err) {
     if (err.name === "ValidationError") {
@@ -69,7 +69,7 @@ exports.login = async (req, res) => {
     const token = generateToken(user._id, user.tokenVersion);
     res.cookie("edubits_auth", token, sessionCookieOptions());
     res.json({
-      user: { name: user.name, email: user.email, avatar: user.avatar, role: user.role, onboardingCompleted: user.onboardingCompleted },
+      user: { name: user.name, email: user.email, avatar: user.avatar, role: user.role, onboardingCompleted: user.onboardingCompleted, academicYear: user.academicYear, academicProgram: user.academicProgram },
     });
   } catch (err) {
     res.status(500).json({ error: "Server error. Please try again." });
@@ -129,10 +129,12 @@ exports.completeOnboarding = async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     user.onboardingCompleted = true;
+    if (typeof req.body.academicYear === "string") user.academicYear = req.body.academicYear.trim().slice(0, 40);
+    if (typeof req.body.academicProgram === "string") user.academicProgram = req.body.academicProgram.trim().slice(0, 100);
     await user.save();
 
     res.json({
-      user: { name: user.name, email: user.email, avatar: user.avatar, role: user.role, onboardingCompleted: user.onboardingCompleted },
+      user: { name: user.name, email: user.email, avatar: user.avatar, role: user.role, onboardingCompleted: user.onboardingCompleted, academicYear: user.academicYear, academicProgram: user.academicProgram },
     });
   } catch (err) {
     res.status(500).json({ error: "Server error. Please try again." });

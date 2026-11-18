@@ -60,6 +60,9 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  academicYear: { type: String, default: "", maxlength: 40 },
+  academicProgram: { type: String, default: "", maxlength: 100 },
+  toolSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
 }, 
 { timestamps: true }
 );
