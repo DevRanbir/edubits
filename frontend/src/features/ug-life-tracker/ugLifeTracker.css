@@ -1,7 +1,0 @@
-.ugl-page ::-webkit-scrollbar { width: 6px; }
-.ugl-page ::-webkit-scrollbar-track { background: var(--bg); }
-.ugl-page ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-.ugl-page input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.5);
-}

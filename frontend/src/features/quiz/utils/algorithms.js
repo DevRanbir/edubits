@@ -54,18 +54,13 @@ export function sortByDifficulty(questions) {
   );
 }
 
-export function sortLeaderboard(entries) {
-  return [...entries].sort((a, b) =>
-    b.score !== a.score ? b.score - a.score : a.name?.localeCompare(b.name)
-  );
-}
 export function formatTime(seconds) {
   const m = Math.floor(seconds / 60).toString().padStart(2, "0");
   const s = (seconds % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 }
 export const DIFFICULTY_COLORS = {
-  easy:   "#22c55e",
+  easy:   "#3e9b8f",
   medium: "#f59e0b",
   hard:   "#ef4444",
 };

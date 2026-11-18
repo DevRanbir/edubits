@@ -17,7 +17,6 @@ export default function Navbar() {
 
   const navLinks = [
     { to: "/quizzes",      label: "Topics" },
-    { to: "/quizzes/leaderboard", label: "Leaderboard" },
     { to: "/quizzes/history",     label: "History" },
   ];
 
@@ -48,10 +47,6 @@ export default function Navbar() {
         <div className={styles.right}>
           {user ? (
             <>
-              <div className={styles.score}>
-                <span className={styles.scorePts}>{user.totalScore ?? 0}</span>
-                <span className={styles.scoreLbl}>pts</span>
-              </div>
               <div className={styles.avatar}>{user.name?.[0]?.toUpperCase()}</div>
               <button className="btn btn-ghost" onClick={handleLogout}>
                 Logout

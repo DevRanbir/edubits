@@ -17,16 +17,16 @@ export const featuredTools = [
 
 export const otherTools = [
   {
-    href: "/sgpa",
+    href: "/tasks?tab=sgpa",
     icon: GraduationCap,
-    name: "GPA Calculator",
-    desc: "Calculate SGPA & CGPA",
+    name: "SGPA Calculator",
+    desc: "Calculate semester SGPA in Tool Deck",
   },
   {
-    href: "/internal",
+    href: "/tasks?tab=internals",
     icon: ClipboardList,
     name: "Internal Marks Calculator",
-    desc: "Calculate internal marks for each subject",
+    desc: "Calculate internal marks in Tool Deck",
   },
 ];
 
@@ -43,7 +43,7 @@ export const features = [
     id: "quizzes",
     eyebrow: "QuizEngine",
     title: "Practice for NPTEL and college viva",
-    desc: "Take quizzes by topic, review your results and history, and see where you rank on the leaderboard.",
+    desc: "Take quizzes by topic, review your results and track your progress.",
     image: "/images/homepage/Quiz.png",
     alt: "Edubits QuizEngine page",
   },

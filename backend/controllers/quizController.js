@@ -175,7 +175,6 @@ const submitQuiz = async (req, res) => {
     const user = await User.findById(req.user._id);
     user.updateTopicProgress(topicId, scoring.totalScore, passed);
 
-    user.totalScore = (user.totalScore || 0) + scoring.totalScore;
     await user.save();
 
     const enrichedHistory = scoring.history.map((h, i) => {
@@ -198,7 +197,6 @@ const submitQuiz = async (req, res) => {
       correctCount: scoring.correctCount,
       wrongCount: scoring.wrongCount,
       history: enrichedHistory,
-      newTotalScore: user.totalScore,
     });
   } catch (err) {
     if (err.code === 11000) {

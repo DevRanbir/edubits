@@ -1,9 +1,16 @@
 import { useState, useCallback, useEffect } from "react";
-import { X, Download, Maximize2, Minimize2 } from "lucide-react";
+import { X, Download } from "lucide-react";
+import WarmTooltip from "../../../components/ui/WarmTooltip";
 import "./PdfViewer.css";
 
 const getAttachmentUrl = (sourceUrl) =>
   sourceUrl?.replace("/upload/", "/upload/fl_attachment/") || sourceUrl;
+
+const getFullWidthPdfUrl = (url) => {
+  if (!url) return "";
+  const baseUrl = url.split("#")[0];
+  return `${baseUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitH&zoom=page-width&pagemode=none`;
+};
 
 export default function PdfViewer({
   isOpen,
@@ -15,7 +22,6 @@ export default function PdfViewer({
   linkedUrl,
 }) {
   const [error, setError] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleDownload = useCallback(() => {
     const a = document.createElement("a");
@@ -24,7 +30,6 @@ export default function PdfViewer({
     a.click();
   }, [url, title]);
 
-  // Hooks must run on every render, so this sits above the early return.
   useEffect(() => {
     if (!isOpen) return undefined;
 
@@ -42,46 +47,76 @@ export default function PdfViewer({
 
   if (!isOpen) return null;
 
+  const displayTitle = (title || "Document")
+    .replace(/\s*\(?(Questions|Solution)\)?/gi, "")
+    .trim();
+
   return (
-    <div className={`pdf-viewer-overlay ${isFullscreen ? "fullscreen" : ""}`} onClick={onClose}>
+    <div className="pdf-viewer-overlay" onClick={onClose}>
       <div className="pdf-viewer-panel" onClick={(e) => e.stopPropagation()}>
         <div className="pdf-viewer-header">
           <div className="pdf-viewer-title">
-            <span>{title}</span>
-            {variant && (
-              <span className={`pdf-variant-badge ${variant}`}>{variant}</span>
-            )}
+            <span>{displayTitle}</span>
           </div>
+
+          {/* Segmented Tab Bar showing BOTH Questions and Solution */}
+          {variant && (
+            <div className="pdf-variant-tabbar">
+              <button
+                type="button"
+                className={`pdf-variant-tab ${variant === "questions" ? "active" : ""}`}
+                onClick={() => {
+                  if (variant !== "questions" && onToggleVariant) onToggleVariant();
+                }}
+              >
+                Questions
+              </button>
+              <button
+                type="button"
+                className={`pdf-variant-tab ${variant === "solution" ? "active" : ""}`}
+                onClick={() => {
+                  if (variant !== "solution" && onToggleVariant) onToggleVariant();
+                }}
+                disabled={variant !== "solution" && !linkedUrl}
+                title={
+                  variant === "solution" || linkedUrl
+                    ? "View Solution"
+                    : "Solution not uploaded"
+                }
+              >
+                Solution
+              </button>
+            </div>
+          )}
+
           <div className="pdf-viewer-actions">
-            {linkedUrl && onToggleVariant && (
+            <WarmTooltip content="Download PDF" side="bottom">
               <button
                 className="pdf-action-btn"
-                onClick={onToggleVariant}
-                title={`Switch to ${variant === "questions" ? "solution" : "questions"}`}
+                onClick={handleDownload}
+                title="Download PDF"
               >
-                🔄 {variant === "questions" ? "Solution" : "Questions"}
+                <Download size={15} />
               </button>
-            )}
-            <button className="pdf-action-btn" onClick={handleDownload} title="Download">
-              <Download size={16} />
-            </button>
-            <button
-              className="pdf-action-btn"
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-            >
-              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </button>
-            <button className="pdf-action-btn pdf-close-btn" onClick={onClose} title="Close">
-              <X size={18} />
-            </button>
+            </WarmTooltip>
+            <WarmTooltip content="Close preview" shortcut="Esc" side="bottom">
+              <button
+                className="pdf-action-btn pdf-close-btn"
+                onClick={onClose}
+                title="Close (Esc)"
+              >
+                <X size={17} />
+              </button>
+            </WarmTooltip>
           </div>
         </div>
 
         {error && (
           <div className="pdf-viewer-error">
             <p>Failed to load PDF: {error}</p>
-            <button type="button" onClick={() => setError(null)}>Retry</button>
+            <button type="button" onClick={() => setError(null)}>
+              Retry
+            </button>
             <a href={getAttachmentUrl(url)} download={`${title || "document"}.pdf`}>
               Download PDF
             </a>
@@ -92,8 +127,8 @@ export default function PdfViewer({
           <div className="pdf-viewer-content">
             <iframe
               key={url}
-              title={`${title || "PDF"} preview`}
-              src={url}
+              title={`${displayTitle} preview`}
+              src={getFullWidthPdfUrl(url)}
               className="pdf-viewer-frame"
               onError={() => setError("The browser could not display this PDF.")}
             />

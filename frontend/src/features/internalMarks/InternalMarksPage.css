@@ -5,6 +5,11 @@
   font-family: var(--font-sans);
 }
 
+.internal-container--embedded {
+  width: 100%;
+  margin: 0 auto;
+}
+
 .internal-header {
   margin-bottom: 32px;
 }
@@ -39,124 +44,246 @@
   line-height: 1.5;
 }
 
-.internal-program-selector,
-.internal-year-selector {
-  margin-bottom: 24px;
+/* Unified Single Bar (Program Dropdown | Year Dropdown | Subject Types) */
+.internal-unified-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--surface-2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 20;
 }
 
-.selector-label {
-  margin: 0 0 10px;
-  color: var(--text-secondary);
-  font-size: 13px;
+/* Dropdown Selectors for Program & Year */
+.internal-dropdown-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.internal-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  font-family: inherit;
+  outline: none;
+}
+
+.internal-dropdown-trigger:hover {
+  background: var(--surface-4);
+  border-color: var(--border-strong);
+  color: #ffffff;
+}
+
+.internal-dropdown-trigger.open {
+  background: var(--surface-4);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+.internal-dropdown-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.internal-dropdown-label {
+  font-size: 12px;
   font-weight: 500;
 }
 
-.selector-description {
-  margin: 9px 0 0;
+.internal-dropdown-chevron {
   color: var(--muted);
-  font-size: 13px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
 }
 
-.internal-container .pill-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.internal-container .pill-tab {
-  display: inline-flex;
-  min-height: 40px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text-secondary);
-  font: 500 13px/1.2 var(--font-sans);
-  cursor: pointer;
-  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
-}
-
-.internal-container .pill-tab:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-2);
+.internal-dropdown-chevron.rotated {
+  transform: rotate(180deg);
   color: var(--text);
 }
 
-.internal-container .pill-tab.active {
-  border-color: var(--border-strong);
+.internal-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 170px;
   background: var(--surface-3);
-  color: var(--text);
-}
-
-.internal-container .pill-tab:focus-visible {
-  outline: 2px solid var(--primary-focus);
-  outline-offset: 2px;
-}
-
-.internal-tabs {
-  margin: 0 0 16px;
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-}
-
-.subject-explanation {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
-  background: var(--surface);
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.5;
+  padding: 4px;
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: internalDropdownFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.explanation-icon {
-  display: inline-flex;
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
+@keyframes internalDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.internal-dropdown-item {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--surface-3);
-  color: var(--primary-hover);
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 6px;
   font-size: 12px;
-  font-weight: 600;
-}
-
-.subject-examples {
-  margin-bottom: 20px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface-2);
-}
-
-.examples-title {
-  margin: 0 0 10px;
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.subject-examples ul {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px 24px;
-  margin: 0;
-  padding-left: 18px;
+  font-weight: 500;
+  font-family: inherit;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+  text-align: left;
+  outline: none;
+}
+
+.internal-dropdown-item:hover {
+  background: var(--surface-4);
+  color: var(--text);
+}
+
+.internal-dropdown-item.selected {
+  background: var(--primary-subtle);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.internal-dropdown-check {
+  margin-left: auto;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.internal-bar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.internal-bar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.internal-bar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  font-family: inherit;
+  outline: none;
+}
+
+.internal-bar-btn:hover {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.internal-bar-btn.active {
+  color: var(--text);
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+  font-weight: 600;
+}
+
+/* Subject Type buttons highlight with primary green when active */
+.internal-bar-btn--type.active {
+  color: var(--primary);
+  background: var(--primary-subtle);
+  border-color: var(--primary-glow);
+}
+
+.internal-bar-btn--type.active svg {
+  color: var(--primary);
+}
+
+/* Refined Subject Examples Context Strip */
+.internal-examples-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.internal-examples-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-right: 4px;
+}
+
+.internal-examples-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.internal-example-chip {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  padding: 3px 8px;
+  border-radius: 6px;
+  line-height: 1.3;
+}
+
+@media (max-width: 768px) {
+  .internal-bar-divider {
+    display: none;
+  }
 }
 
 .internal-card {
@@ -165,6 +292,9 @@
   border: 1px solid var(--border);
   border-radius: 16px;
   background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: none;
 }
 
 .internal-calc-grid {
@@ -194,7 +324,8 @@
 .internal-calc-grid input {
   min-height: 44px;
   border-radius: 8px;
-  background: var(--bg);
+  background: var(--surface);
+  border: 1px solid var(--border);
   color: var(--text);
 }
 
@@ -259,23 +390,29 @@
   }
 }
 
-/* Shared Edubits calculator treatment used by the CGPA page. */
+/* Shared Edubits calculator treatment matching design system tokens */
 .internal-container {
-  --primary: #78c99a;
-  --primary-hover: #91d9ad;
-  --primary-focus: #78c99a;
-  --on-primary: #102117;
-  --success: #78c99a;
-  --warning: #e9a66b;
-  --bg: #0b0d0c;
-  --surface: #121513;
-  --surface-2: #181c19;
-  --surface-3: #202621;
-  --border: #292f2a;
-  --border-strong: #3a443d;
-  --text: #f3f5f2;
-  --text-secondary: #c4cbc4;
-  --muted: #a0a8a0;
+  --primary: #3e9b8f;
+  --primary-hover: #4dbfae;
+  --primary-focus: #3e9b8f;
+  --primary-glow: rgba(62, 155, 143, 0.25);
+  --primary-subtle: rgba(62, 155, 143, 0.12);
+  --on-primary: #ffffff;
+  --success: #3e9b8f;
+  --warning: #e5a50a;
+  --danger: #e5484d;
+  --bg: #05080a;
+  --surface: #0c1114;
+  --surface-2: #12181c;
+  --surface-3: #182025;
+  --surface-4: #1e282e;
+  --border: #1b262c;
+  --border-strong: #27363f;
+  --border-tertiary: #354954;
+  --text: #f5f6f7;
+  --text-secondary: #c8d3d1;
+  --muted: #859693;
+  --text-tertiary: #617370;
   width: min(100% - 40px, 1040px);
   margin: 0 auto;
   padding: var(--space-xl) 0 var(--space-xxl);
@@ -352,8 +489,8 @@
 }
 
 .internal-container .pill-tab.active {
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
-  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  border-color: var(--primary);
+  background: var(--primary-subtle);
   color: var(--text);
 }
 
@@ -371,7 +508,7 @@
   margin-bottom: var(--space-lg);
   padding: var(--space-md) var(--space-lg);
   background: var(--surface);
-  border-color: var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }
 
@@ -389,14 +526,14 @@
 .internal-card {
   padding: var(--space-lg);
   background: var(--surface);
-  border-color: var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
 }
 
 .internal-calc-section {
-  background: var(--surface-2);
-  border-color: var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
 }
 
 .internal-calc-section h3 {
@@ -416,24 +553,52 @@
 }
 
 .internal-calc-grid input {
+  min-height: 42px;
+  border-radius: 8px !important;
   background: var(--surface) !important;
-  border-color: var(--border) !important;
-  border-radius: var(--radius-md) !important;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  font-size: 13.5px !important;
+  box-sizing: border-box;
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease !important;
 }
 
 .internal-calc-grid input:focus {
-  border-color: var(--primary-focus) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+  border-color: var(--primary) !important;
+  background: var(--surface-3) !important;
+  box-shadow: 0 0 0 2px var(--primary-glow) !important;
 }
 
 .internal-calc-grid button {
-  border-radius: var(--radius-md);
-  transition: background-color 150ms ease, border-color 150ms ease;
+  min-height: 42px;
+  border-radius: 8px !important;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.internal-calc-grid button:first-child {
+  background: var(--surface-3) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+.internal-calc-grid button:first-child:hover {
+  background: var(--surface-4) !important;
+  border-color: var(--border-strong) !important;
+  color: #ffffff !important;
+}
+
+.internal-calc-grid button:last-child {
+  background: var(--primary) !important;
+  color: var(--on-primary) !important;
+  border: 1px solid transparent !important;
 }
 
 .internal-calc-grid button:last-child:not(:disabled):hover {
   background: var(--primary-hover) !important;
+  box-shadow: 0 4px 16px var(--primary-glow) !important;
 }
 
 @media (max-width: 680px) {
@@ -448,4 +613,165 @@
   .internal-card { padding: var(--space-md); }
   .subject-examples { padding: var(--space-md); }
   .internal-hybrid-worksheet-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+
+/* ============================================================================
+   Internal Marks Light Mode
+   ============================================================================ */
+
+body.light .internal-container {
+  color: var(--text, #0b1413);
+}
+
+body.light .internal-title {
+  color: var(--text, #0b1413);
+}
+
+body.light .internal-title svg {
+  background: var(--surface, #ffffff);
+  border-color: var(--border, #d4dedd);
+  color: var(--primary, #287d72);
+}
+
+body.light .internal-subtitle {
+  color: var(--muted, #536764);
+}
+
+body.light .internal-unified-bar {
+  background: var(--surface, #ffffff);
+  border-color: var(--border, #d4dedd);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+body.light .internal-dropdown-trigger {
+  background: var(--surface-2, #edf3f2);
+  border-color: var(--border, #d4dedd);
+  color: var(--text, #0b1413);
+}
+
+body.light .internal-dropdown-trigger:hover,
+body.light .internal-dropdown-trigger.open {
+  background: var(--surface-3, #e1ebed);
+  color: var(--text, #0b1413);
+}
+
+body.light .internal-dropdown-icon {
+  color: var(--primary, #287d72);
+}
+
+body.light .internal-dropdown-menu {
+  background: var(--surface, #ffffff);
+  border-color: var(--border, #d4dedd);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+body.light .internal-dropdown-item {
+  color: var(--muted, #536764);
+}
+
+body.light .internal-dropdown-item:hover {
+  background: var(--surface-2, #edf3f2);
+  color: var(--text, #0b1413);
+}
+
+body.light .internal-dropdown-item.selected {
+  background: rgba(40, 125, 114, 0.12);
+  color: var(--primary, #287d72);
+}
+
+body.light .internal-dropdown-check {
+  color: var(--primary, #287d72);
+}
+
+body.light .internal-bar-btn {
+  color: var(--muted, #536764);
+}
+
+body.light .internal-bar-btn:hover {
+  color: var(--text, #0b1413);
+  background: var(--surface-2, #edf3f2);
+}
+
+body.light .internal-bar-btn.active {
+  color: var(--text, #0b1413);
+  background: var(--surface-3, #e1ebed);
+  border-color: var(--border-strong, #b8c8c6);
+}
+
+body.light .internal-bar-btn--type.active {
+  color: var(--primary, #287d72);
+  background: rgba(40, 125, 114, 0.12);
+  border-color: rgba(40, 125, 114, 0.25);
+}
+
+body.light .internal-bar-btn--type.active svg {
+  color: var(--primary, #287d72);
+}
+
+body.light .internal-bar-divider {
+  background: var(--border, #d4dedd);
+}
+
+body.light .internal-examples-strip {
+  background: var(--surface-2, #edf3f2);
+  border-color: var(--border, #d4dedd);
+}
+
+body.light .internal-examples-label {
+  color: var(--muted, #536764);
+}
+
+body.light .internal-example-chip {
+  background: var(--surface, #ffffff);
+  border-color: var(--border, #d4dedd);
+  color: var(--text, #0b1413);
+}
+
+body.light .internal-card {
+  background: var(--surface, #ffffff);
+  border-color: var(--border, #d4dedd);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+body.light .internal-card-title {
+  color: var(--text, #0b1413);
+}
+
+body.light .internal-calc-grid label {
+  color: var(--muted, #536764);
+}
+
+body.light .internal-calc-grid input {
+  background: var(--surface-2, #edf3f2);
+  border-color: var(--border, #d4dedd);
+  color: var(--text, #0b1413);
+}
+
+body.light .internal-calc-grid input:focus {
+  border-color: var(--primary, #287d72) !important;
+  box-shadow: 0 0 0 3px rgba(40, 125, 114, 0.18);
+  background: #ffffff;
+}
+
+body.light .internal-marks-badge {
+  background: rgba(40, 125, 114, 0.12);
+  color: var(--primary, #287d72);
+  border-color: rgba(40, 125, 114, 0.25);
+}
+
+body.light .internal-calc-section {
+  background: var(--surface-2, #edf3f2) !important;
+  border-color: var(--border, #d4dedd) !important;
+}
+
+body.light .internal-calc-grid button:first-child {
+  background: var(--surface-2, #edf3f2) !important;
+  border-color: var(--border, #d4dedd) !important;
+  color: var(--text, #0b1413) !important;
+}
+
+body.light .internal-calc-grid button:first-child:hover {
+  background: var(--surface-3, #e1ebed) !important;
+  border-color: var(--border-strong, #b8c8c6) !important;
 }

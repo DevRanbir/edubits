@@ -5,6 +5,8 @@ import { useToast } from "../context/toastValue";
 import { Loader, ArrowRight } from "lucide-react";
 import { GoogleIcon, GitHubIcon } from "../features/homepage/BrandIcons";
 import { API_URL } from "../config/api";
+import WarmTooltip from "../components/ui/WarmTooltip";
+import AuthCutoutLayout from "./AuthCutoutLayout";
 import "./login.css";
 
 const handleOAuthLogin = (provider) => {
@@ -61,103 +63,92 @@ export default function Register() {
   };
 
   return (
-    <div className="auth-page">
-      <section className="auth-left" aria-label="Edubits resources">
-        <Link to="/" className="auth-left-brand">
-          <img src="/images/favicon.png" alt="Edubits logo" width="40" height="40" className="auth-logo" />
-          <span>Edubits</span>
-        </Link>
-
-        <div className="auth-left-copy">
-          <h2>Let's make Engineering <span>easier.</span></h2>
-          <p>Get PYQs, Notes, Playlists, Sgpa Calculator &amp; more...</p>
-        </div>
-
-        <figure className="auth-resource-preview">
-          <img src="/images/homepage/Resources.png" alt="Preview of Edubits study resources organized by year" />
-        </figure>
-      </section>
-
-      <div className="auth-right">
-        <div className="auth-form-wrap">
-          <div className="auth-form-header">
-            <h1>Create your account</h1>
-            <p>It's free. No ads. Not now. Not ever.</p>
-          </div>
-
-          <div className="auth-oauth-buttons">
-            <button
-              type="button"
-              className="btn btn-secondary auth-oauth-btn auth-oauth-btn--google"
-              onClick={() => handleOAuthLogin("google")}
-            >
-              <GoogleIcon /> Continue with Google
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary auth-oauth-btn auth-oauth-btn--github"
-              onClick={() => handleOAuthLogin("github")}
-            >
-              <GitHubIcon /> Continue with GitHub
-            </button>
-          </div>
-
-          <div className="auth-divider">or</div>
-
-          <form onSubmit={handleRegister} className="auth-form">
-            <div className="input-group">
-              <input
-                type="text"
-                placeholder=" "
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-              <label>Full Name</label>
-            </div>
-
-            <div className="input-group">
-              <input
-                type="email"
-                placeholder=" "
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <label>Email</label>
-            </div>
-
-            <div className="input-group">
-              <input
-                type="password"
-                placeholder=" "
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <label>Password</label>
-            </div>
-
-            <button type="submit" className="btn btn-primary auth-submit-btn" disabled={loading}>
-              {loading ? (
-                <span className="btn-loading">
-                  <Loader size={16} className="spin-icon" />
-                  Creating account...
-                </span>
-              ) : (
-                "Create account"
-              )}
-            </button>
-          </form>
-
-          <p className="auth-footer">
-            Already have an account?
-            <Link to="/login">
-              Log in <ArrowRight size={14} />
-            </Link>
-          </p>
-        </div>
+    <AuthCutoutLayout
+      mode="register"
+      title="Create account."
+      subtitle="Free forever. No ads. Built for engineering."
+    >
+      <div className="auth-oauth-buttons">
+        <WarmTooltip content="Sign up with Google" side="top">
+          <button
+            type="button"
+            className="btn btn-secondary auth-oauth-btn"
+            onClick={() => handleOAuthLogin("google")}
+          >
+            <GoogleIcon /> Google
+          </button>
+        </WarmTooltip>
+        <WarmTooltip content="Sign up with GitHub" side="top">
+          <button
+            type="button"
+            className="btn btn-secondary auth-oauth-btn"
+            onClick={() => handleOAuthLogin("github")}
+          >
+            <GitHubIcon /> GitHub
+          </button>
+        </WarmTooltip>
       </div>
-    </div>
+
+      <div className="auth-divider">or</div>
+
+      <form onSubmit={handleRegister} className="auth-form">
+        <div className="input-group">
+          <input
+            type="text"
+            placeholder=" "
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+          <label>Full Name</label>
+        </div>
+
+        <div className="input-group">
+          <input
+            type="email"
+            placeholder=" "
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <label>Email</label>
+        </div>
+
+        <div className="input-group">
+          <input
+            type="password"
+            placeholder=" "
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <label>Password (12+ chars)</label>
+        </div>
+
+        <WarmTooltip content="Create your permanent Edubits account" side="top">
+          <button
+            type="submit"
+            className="btn btn-primary auth-submit-btn"
+            disabled={loading}
+          >
+            {loading ? (
+              <span className="btn-loading">
+                <Loader size={15} className="spin-icon" />
+                Creating account...
+              </span>
+            ) : (
+              "Create account"
+            )}
+          </button>
+        </WarmTooltip>
+      </form>
+
+      <p className="auth-footer auth-footer--mobile">
+        Already have an account?
+        <Link to="/login">
+          Log in <ArrowRight size={14} />
+        </Link>
+      </p>
+    </AuthCutoutLayout>
   );
 }

@@ -5,7 +5,7 @@ const jwt    = require("jsonwebtoken");
 const Task = require("../models/Task");
 const QuizAttempt = require("../models/QuizAttempt");
 const UserPYQProgress = require("../models/UserPYQProgress");
-const ProgrammingProgress = require("../features/programming/models/ProgrammingProgress");
+const mongoose = require("mongoose");
 const Resource = require("../models/Resource");
 const { randomUUID } = require("crypto");
 
@@ -246,7 +246,7 @@ exports.deleteAccount = async (req, res) => {
       Task.deleteMany({ userId }),
       QuizAttempt.deleteMany({ userId }),
       UserPYQProgress.deleteMany({ userId }),
-      ProgrammingProgress.deleteMany({ user: userId }),
+      mongoose.connection.collection("programmingprogresses").deleteMany({ user: userId }),
       Resource.updateMany({ uploadedBy: userId }, { $unset: { uploadedBy: 1 } }),
     ]);
 

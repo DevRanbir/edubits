@@ -1,12 +1,5 @@
 const DIFFICULTY_ORDER = { easy: 0, medium: 1, hard: 2 };
 
-function sortLeaderboard(entries) {
-  return [...entries].sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    return a.name.localeCompare(b.name);
-  });
-}
-
 function sortQuestionsByDifficulty(questions) {
   return [...questions].sort((a, b) => {
     const diff = DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty];
@@ -26,4 +19,4 @@ function dynamicSort(array, sortDescriptors) {
   });
 }
 
-module.exports = { sortLeaderboard, sortQuestionsByDifficulty, dynamicSort, DIFFICULTY_ORDER };
+module.exports = { sortQuestionsByDifficulty, dynamicSort, DIFFICULTY_ORDER };

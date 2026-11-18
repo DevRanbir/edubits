@@ -7,8 +7,8 @@
   --about-text: #f3f5f2;
   --about-secondary: #c4cbc4;
   --about-muted: #a0a8a0;
-  --about-accent: #78c99a;
-  --about-on-accent: #102117;
+  --about-accent: #3e9b8f;
+  --about-on-accent: #ffffff;
   min-height: 100vh;
   padding: 0 24px 88px;
   background: var(--about-bg);
@@ -19,20 +19,20 @@
 .about-container { width: min(100%, 1120px); margin: 0 auto; }
 .about-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .88fr); align-items: center; gap: clamp(40px, 7vw, 88px); padding: clamp(64px, 9vw, 112px) 0 92px; }
 .about-eyebrow { display: flex; align-items: center; gap: 9px; margin: 0 0 14px; color: var(--about-muted); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
-.about-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--about-accent); box-shadow: 0 0 12px #78c99a80; }
+.about-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--about-accent); box-shadow: 0 0 12px rgba(62, 155, 143, 0.5); }
 .about-hero h1, .about-section-heading h2, .about-story-card h2, .about-stack h2, .about-cta h2 { margin: 0; color: var(--about-text); font-weight: 600; letter-spacing: -.035em; }
 .about-hero h1 { max-width: 680px; font-size: clamp(40px, 5.2vw, 64px); line-height: 1.04; }
 .about-intro { max-width: 590px; margin: 22px 0 0; color: var(--about-secondary); font-size: 16px; line-height: 1.75; }
 .about-hero-actions { display: flex; flex-wrap: wrap; gap: 11px; margin-top: 28px; }
 .about-primary-link, .about-secondary-link { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 9px; padding: 0 15px; border: 1px solid transparent; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease; }
 .about-primary-link { background: var(--about-accent); color: var(--about-on-accent); }
-.about-primary-link:hover { transform: translateY(-1px); background: #91d9ad; color: var(--about-on-accent); text-decoration: none; }
+.about-primary-link:hover { transform: translateY(-1px); background: #4dbfae; color: var(--about-on-accent); text-decoration: none; }
 .about-secondary-link { border-color: var(--about-border-strong); background: var(--about-surface); color: var(--about-text); }
-.about-secondary-link:hover { border-color: #567160; background: var(--about-surface-raised); color: var(--about-text); text-decoration: none; }
+.about-secondary-link:hover { border-color: #3e9b8f; background: var(--about-surface-raised); color: var(--about-text); text-decoration: none; }
 .about-primary-link:focus-visible, .about-secondary-link:focus-visible { outline: 2px solid var(--about-accent); outline-offset: 3px; }
 
 .about-hero-visual { position: relative; padding: 16px; border: 1px solid var(--about-border); border-radius: 16px; background: linear-gradient(145deg, #171c18, #101311 70%); box-shadow: 0 28px 80px #0005; }
-.about-hero-visual::before { position: absolute; z-index: 0; inset: 20% -10% -10% 20%; border-radius: 50%; background: #78c99a0d; content: ""; filter: blur(32px); pointer-events: none; }
+.about-hero-visual::before { position: absolute; z-index: 0; inset: 20% -10% -10% 20%; border-radius: 50%; background: rgba(62, 155, 143, 0.05); content: ""; filter: blur(32px); pointer-events: none; }
 .about-visual-caption { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; padding: 2px 2px 14px; color: var(--about-secondary); font-size: 12px; }
 .about-visual-caption svg { color: var(--about-accent); }
 .about-hero-visual img { position: relative; z-index: 1; display: block; width: 100%; height: auto; aspect-ratio: 1.62; object-fit: cover; object-position: top; border: 1px solid var(--about-border); border-radius: 10px; background: var(--about-surface-raised); }

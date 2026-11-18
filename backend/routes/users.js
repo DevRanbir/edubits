@@ -9,7 +9,7 @@ router.get("/me/progress", protect, async (req, res) => {
     const user = await User.findById(req.user._id);
     const progressObj = {};
     user.progress.forEach((val, key) => { progressObj[key] = val; });
-    res.json({ progress: progressObj, totalScore: user.totalScore });
+    res.json({ progress: progressObj });
   } catch (err) {
     res.status(500).json({ error: "Request failed" });
   }

@@ -23,16 +23,12 @@ Last full run: 2026-10-21 - **35 errors, 6 warnings** (was 48 / 6). Re-run `npm 
 | `src/context/AuthContext.jsx` | 15, 85 | `err` | **TODO** - use `catch {` |
 | `src/features/cgpa/CGPA.jsx` | 29, 30, 31, 66 | `maxVal`, `barW`, `gap` | **TODO** - remove unused consts in `BarChart` |
 | `src/features/onboarding/OnboardingModal.jsx` | 52 | `user` | **TODO** - remove |
-| `src/features/programming/pages/TopicProblemsPage.jsx` | 59, 79 | `err` | **TODO** - use `catch {` |
 | `src/features/quiz/pages/QuizPage.jsx` | 281, 341 | `isMulti`, `isMultiSelect` | **TODO** - remove |
 | `src/features/quiz/pages/ResultsPage.jsx` | 174 | `isMultiSelect` | **TODO** - remove |
 | `src/features/resources/components/PdfViewer.jsx` | 13 | `paperKey` (prop) | **TODO** - remove from props or use |
 | `src/features/resources/pages/ResourcesPage.jsx` | 1, 44 | `useCallback`, `progressMap`, `progressLoading` | **TODO** - remove (or wire up progress UI) |
 | `src/features/sgpa/SGPA.jsx` | 138, 217 | `loadExample`, `isEmpty` | **TODO** - remove or use |
 | `src/features/tasks/components/TaskCard.jsx` | 1 | `formatDate` | **TODO** - remove import |
-| `src/features/ug-life-tracker/components/DateOverridePanel.jsx` | 3 | `overrides` (prop) | **TODO** - remove or use |
-| `src/features/ug-life-tracker/components/ReflectionEditor.jsx` | 27 | `activePrompt` | **TODO** - remove or use |
-| `src/features/ug-life-tracker/components/WeekDetailsDrawer.jsx` | 4 | `isBeforeWeek` | **TODO** - remove import |
 | `src/features/sgpa/SGPA.jsx` | 118 | empty `catch {}` block (`no-empty`) | **TODO** - add a comment or handle the error |
 
 ### 2. React Hooks Issues
@@ -43,7 +39,6 @@ Last full run: 2026-10-21 - **35 errors, 6 warnings** (was 48 / 6). Re-run `npm 
 | `src/features/pyqs/PYQsPage.jsx` | 675 | `setNotes`/`setAttempted` in `useEffect` | **TODO** - use lazy state initialiser |
 | `src/features/quiz/pages/RegisterPage.jsx` | 16 | `setState` in `useEffect` | **TODO** |
 | `src/features/sgpa/SGPA.jsx` | 58, 131 | `setState` in `useEffect` | **TODO** |
-| `src/features/ug-life-tracker/components/DateOverridePanel.jsx` | 17 | `setState` in `useEffect` | **TODO** |
 | `src/features/tasks/components/TaskModal.jsx` | 32 | `resetForm` used before it is declared | **TODO** - move declaration above the effect |
 | `src/features/quiz/components/Graph/TopicCard.jsx` | 30 | component created during render | **TODO** - move `TopicIcon` outside the component |
 
@@ -280,7 +275,7 @@ Found in the 2026-10-22 review of the Resources feature and the homepage. Lint a
 ### Medium Priority
 5. Fix the remaining `set-state-in-effect` errors and `TopicCard` / `TaskModal` hook errors (tables above).
 6. Remove unused variables (about 25 instances).
-7. Add a `/about` route (`AboutPage.jsx` exists; the footer links to it) or remove the link. Wrap `/programming/admin` in `AdminRoute`.
+7. Restore a usable `/about` page or remove the link.
 8. Move `useAuth` / `useToast` out of the provider files (react-refresh).
 
 ### Low Priority

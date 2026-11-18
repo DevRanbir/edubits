@@ -256,7 +256,7 @@ const styles = {
     alignItems:     "center",
     justifyContent: "space-between",
     padding:        12,
-    background:     "#16a34a22",
+    background:     "rgba(62, 155, 143, 0.15)",
     borderRadius:   8,
     gap:            12,
   },

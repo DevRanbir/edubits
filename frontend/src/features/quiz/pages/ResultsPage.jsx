@@ -11,6 +11,8 @@ import {
   Trophy,
   X,
 } from "lucide-react";
+import GradientASCII from "../../../components/ui/GradientASCII";
+import WarmTooltip from "../../../components/ui/WarmTooltip";
 import "../styles/global.css";
 import "../styles/quizEngine.css";
 import "./ResultsPage.css";
@@ -21,17 +23,36 @@ export default function ResultsPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
+  // Shared ASCII Background
+  const asciiBackground = (
+    <div className="quiz-ascii-bg" aria-hidden="true">
+      <GradientASCII
+        shape="horizon"
+        colors={["#115d62", "#1f7771", "#3e9b8f", "#5cc2b4"]}
+        density={0.7}
+        glyphOpacity={0.5}
+        glow={0.3}
+        flicker={0.12}
+        mouseInteraction={false}
+        intro={false}
+      />
+    </div>
+  );
+
   if (!state?.result) {
     return (
-      <main className="quiz-results-page quiz-shell fade-in">
-        <section className="results-empty card">
-          <div className="results-empty-icon"><Info size={24} /></div>
-          <h1>No result to show</h1>
-          <p>Finish a quiz first, then your score and answer review will appear here.</p>
-          <Link to="/quizzes" className="btn btn-primary results-primary-link">
-            Browse topics <ArrowRight size={17} />
-          </Link>
-        </section>
+      <main className="quiz-results-shell">
+        {asciiBackground}
+        <div className="quiz-results-canvas">
+          <section className="results-empty-state">
+            <div className="results-empty-icon"><Info size={24} /></div>
+            <h1>No result to display</h1>
+            <p>Complete a quiz round first, then your score summary and answer review will appear here.</p>
+            <Link to="/quizzes" className="quiz-cta-button">
+              <span>Browse topics</span> <ArrowRight size={16} />
+            </Link>
+          </section>
+        </div>
       </main>
     );
   }
@@ -59,154 +80,164 @@ export default function ResultsPage() {
   ];
 
   return (
-    <main className="quiz-results-page quiz-shell fade-in">
-      <button className="results-back-link" onClick={() => navigate("/quizzes")}>
-        <ArrowLeft size={17} />
-        All topics
-      </button>
+    <main className="quiz-results-shell">
+      {asciiBackground}
 
-      <section className="results-overview card">
-        <div className="results-overview-topline">
-          <span className="results-eyebrow">QUIZ COMPLETE</span>
-          <span className={`results-status ${passed ? "is-passed" : "is-failed"}`}>
-            {passed ? <CheckCircle2 size={15} /> : <RotateCcw size={15} />}
-            {passed ? "Passed" : "Keep practising"}
-          </span>
-        </div>
+      <div className="quiz-results-canvas">
+        <button className="quiz-nav-back" onClick={() => navigate("/quizzes")}>
+          <ArrowLeft size={16} />
+          <span>All topics</span>
+        </button>
 
-        <div className="results-hero">
-          <div className="results-message">
-            <div className={`results-trophy ${passed ? "is-passed" : "is-failed"}`}>
-              <Trophy size={27} />
-            </div>
-            <h1>{passed ? "Nice work!" : "A good start."}</h1>
-            <p className="results-topic-name">{topicName}</p>
-            <p className="results-message-copy">
-              {passed
-                ? "You passed this round. Keep building on what you know."
-                : "Review the answers below, then try the topic again when you’re ready."}
-            </p>
+        <section className="results-overview-single">
+          <div className="results-overview-topline">
+            <span className="results-eyebrow">QUIZ COMPLETE</span>
+            <span className={`results-status ${passed ? "is-passed" : "is-failed"}`}>
+              {passed ? <CheckCircle2 size={14} /> : <RotateCcw size={14} />}
+              {passed ? "Passed" : "Keep practising"}
+            </span>
           </div>
 
-          <div
-            className="results-score-ring"
-            style={{ "--score-angle": `${normalizedPercentage * 3.6}deg` }}
-            role="img"
-            aria-label={`Score: ${normalizedPercentage}%`}
-          >
-            <div className="results-score-ring-inner">
-              <strong>{normalizedPercentage}%</strong>
-              <span>Score</span>
+          <div className="results-hero">
+            <div className="results-message">
+              <div className={`results-trophy ${passed ? "is-passed" : "is-failed"}`}>
+                <Trophy size={24} />
+              </div>
+              <h1 className="results-title">{passed ? "Nice work!" : "Keep building."}</h1>
+              <p className="results-topic-name">{topicName}</p>
+              <p className="results-message-copy">
+                {passed
+                  ? "You passed this round. Keep sharpening your conceptual edge."
+                  : "Review the answers below, then re-attempt the topic when you're ready."}
+              </p>
+            </div>
+
+            <div
+              className="results-score-ring"
+              style={{ "--score-angle": `${normalizedPercentage * 3.6}deg` }}
+              role="img"
+              aria-label={`Score: ${normalizedPercentage}%`}
+            >
+              <div className="results-score-ring-inner">
+                <strong>{normalizedPercentage}%</strong>
+                <span>Score</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="results-stats-grid">
-          {stats.map(({ label, value, tone }) => (
-            <div className={`results-stat ${tone}`} key={label}>
-              <strong>{value}</strong>
-              <span>{label}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="results-actions">
-          <button
-            className="btn btn-primary results-retake-button"
-            onClick={() => navigate(`/quizzes/${topic?._id || ""}`, { state: { topic } })}
-          >
-            <RotateCcw size={17} />
-            Retake Quiz
-          </button>
-          <Link to="/quizzes" className="results-secondary-link">
-            Choose another topic <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-
-      {history.length > 0 && (
-        <section className="results-review-section">
-          <div className="results-review-heading">
-            <div>
-              <span className="results-eyebrow">YOUR ATTEMPT</span>
-              <h2>Answer review</h2>
-            </div>
-            <span className="results-review-count">{history.length} questions</span>
+          <div className="results-stats-grid">
+            {stats.map(({ label, value, tone }) => (
+              <div className={`results-stat ${tone}`} key={label}>
+                <strong>{value}</strong>
+                <span>{label}</span>
+              </div>
+            ))}
           </div>
 
-          <div className="results-review-list">
-            {history.map((answer, index) => {
-              const question = questionMap.get(String(answer.questionId)) || {};
-              const isCorrect = answer.result === "correct";
-              const isTimeout = answer.result === "timeout";
-              const correctIndices = answer.correctAnswer ?? question.correctAnswer ?? [];
-              const correctOptions = Array.isArray(correctIndices) ? correctIndices : [correctIndices];
-              const selectedOptions = answer.selectedOptions?.length
-                ? answer.selectedOptions
-                : answer.selectedOption !== undefined && answer.selectedOption !== null
-                  ? [answer.selectedOption]
-                  : [];
-              const reviewTone = isCorrect ? "is-correct" : isTimeout ? "is-timeout" : "is-incorrect";
-
-              return (
-                <article className={`results-review-card ${reviewTone}`} key={answer.questionId || index}>
-                  <div className="results-review-card-top">
-                    <span className="results-question-number">Question {String(index + 1).padStart(2, "0")}</span>
-                    <div className="results-review-tags">
-                      {question.difficulty && (
-                        <span className={`results-difficulty ${question.difficulty.toLowerCase()}`}>
-                          {question.difficulty}
-                        </span>
-                      )}
-                      <span className={`results-answer-status ${reviewTone}`}>
-                        {isCorrect ? <Check size={14} /> : isTimeout ? <Clock3 size={14} /> : <X size={14} />}
-                        {isCorrect ? "Correct" : isTimeout ? "Timed out" : "Incorrect"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <h3>{answer.questionText || question.text || "Question unavailable"}</h3>
-
-                  {question.options?.length > 0 ? (
-                    <div className="results-answer-options">
-                      {question.options.map((option, optionIndex) => {
-                        const isAnswerCorrect = correctOptions.includes(optionIndex);
-                        const wasSelected = selectedOptions.includes(optionIndex);
-                        const optionTone = isAnswerCorrect
-                          ? "is-answer-correct"
-                          : wasSelected
-                            ? "is-answer-wrong"
-                            : "";
-
-                        return (
-                          <div className={`results-answer-option ${optionTone}`} key={optionIndex}>
-                            <span className="results-option-letter">{LETTERS[optionIndex]}</span>
-                            <span className="results-option-text">{option}</span>
-                            {isAnswerCorrect && <span className="results-option-label">Correct answer</span>}
-                            {wasSelected && !isAnswerCorrect && <span className="results-option-label">Your answer</span>}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="results-answer-summary">
-                      <span><strong>Correct:</strong> {formatAnswerLetters(correctOptions)}</span>
-                      <span><strong>Your answer:</strong> {formatAnswerLetters(selectedOptions)}</span>
-                    </div>
-                  )}
-
-                  {answer.explanation && (
-                    <div className="results-explanation">
-                      <Info size={16} />
-                      <p>{answer.explanation}</p>
-                    </div>
-                  )}
-                </article>
-              );
-            })}
+          <div className="results-actions">
+            <WarmTooltip content="Retake quiz on this topic" side="top">
+              <button
+                className="quiz-cta-button"
+                onClick={() => navigate(`/quizzes/${topic?._id || ""}`, { state: { topic } })}
+              >
+                <RotateCcw size={16} />
+                <span>Retake Quiz</span>
+              </button>
+            </WarmTooltip>
+            <WarmTooltip content="Browse and choose another topic" side="top">
+              <Link to="/quizzes" className="results-secondary-link">
+                <span>Choose another topic</span> <ArrowRight size={15} />
+              </Link>
+            </WarmTooltip>
           </div>
         </section>
-      )}
+
+        {history.length > 0 && (
+          <section className="results-review-section">
+            <div className="results-review-heading">
+              <div>
+                <span className="results-eyebrow">YOUR ATTEMPT</span>
+                <h2>Detailed Answer Review</h2>
+              </div>
+              <span className="results-review-count">{history.length} questions</span>
+            </div>
+
+            <div className="results-review-list">
+              {history.map((answer, index) => {
+                const question = questionMap.get(String(answer.questionId)) || {};
+                const isCorrect = answer.result === "correct";
+                const isTimeout = answer.result === "timeout";
+                const correctIndices = answer.correctAnswer ?? question.correctAnswer ?? [];
+                const correctOptions = Array.isArray(correctIndices) ? correctIndices : [correctIndices];
+                const selectedOptions = answer.selectedOptions?.length
+                  ? answer.selectedOptions
+                  : answer.selectedOption !== undefined && answer.selectedOption !== null
+                    ? [answer.selectedOption]
+                    : [];
+                const reviewTone = isCorrect ? "is-correct" : isTimeout ? "is-timeout" : "is-incorrect";
+
+                return (
+                  <article className={`results-review-item ${reviewTone}`} key={answer.questionId || index}>
+                    <div className="results-review-card-top">
+                      <span className="results-question-number">Question {String(index + 1).padStart(2, "0")}</span>
+                      <div className="results-review-tags">
+                        {question.difficulty && (
+                          <span className={`results-difficulty ${question.difficulty.toLowerCase()}`}>
+                            {question.difficulty}
+                          </span>
+                        )}
+                        <span className={`results-answer-status ${reviewTone}`}>
+                          {isCorrect ? <Check size={13} /> : isTimeout ? <Clock3 size={13} /> : <X size={13} />}
+                          {isCorrect ? "Correct" : isTimeout ? "Timed out" : "Incorrect"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <h3 className="results-question-text">
+                      {answer.questionText || question.text || "Question text unavailable"}
+                    </h3>
+
+                    {question.options?.length > 0 ? (
+                      <div className="results-answer-options">
+                        {question.options.map((option, optionIndex) => {
+                          const isAnswerCorrect = correctOptions.includes(optionIndex);
+                          const wasSelected = selectedOptions.includes(optionIndex);
+                          const optionTone = isAnswerCorrect
+                            ? "is-answer-correct"
+                            : wasSelected
+                              ? "is-answer-wrong"
+                              : "";
+
+                          return (
+                            <div className={`results-answer-option ${optionTone}`} key={optionIndex}>
+                              <span className="results-option-letter">{LETTERS[optionIndex]}</span>
+                              <span className="results-option-text">{option}</span>
+                              {isAnswerCorrect && <span className="results-option-label correct">Correct</span>}
+                              {wasSelected && !isAnswerCorrect && <span className="results-option-label your-choice">Your choice</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="results-answer-summary">
+                        <span><strong>Correct:</strong> {formatAnswerLetters(correctOptions)}</span>
+                        <span><strong>Your answer:</strong> {formatAnswerLetters(selectedOptions)}</span>
+                      </div>
+                    )}
+
+                    {answer.explanation && (
+                      <div className="results-explanation">
+                        <Info size={15} />
+                        <p>{answer.explanation}</p>
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        )}
+      </div>
     </main>
   );
 }

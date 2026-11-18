@@ -9,14 +9,14 @@
 - [ ] `git rm -r --cached backend/uploads` (22 images still tracked)
 - [ ] Set `BACKEND_URL`, `FRONTEND_URL`, `NODE_ENV=production`, `CORS_ORIGINS` on Render; `VITE_API_URL` (ending in `/api`) on Vercel
 - [ ] Fix remaining `set-state-in-effect` lint errors (OnboardingModal, PYQsPage, RegisterPage, SGPA, DateOverridePanel)
-- [ ] Add `/about` route; wrap `/programming/admin` in `AdminRoute`
+- [ ] Restore a usable `/about` page
 - [ ] Replace JWT-in-URL OAuth redirect with a one-time code
 
 ### General
 - [ ] Post-tool feedback prompt (CGPA calculated, quiz results, PYQ completed) — "Was this helpful?" Yes/No + optional text box for what was missing
 - [ ] Floating feedback button (bottom right) — 🐛 Report Bug / 💡 Suggest Feature / ❤️ Appreciation + textbox, store origin tool/page
   - [ ] Only prompt active users (3+ visits && 10+ min active)
-  - [ ] Contextual prompts: "Missing a PYQ? Request one." / "Want a quiz for another subject? Suggest one." / "What would make this tracker more useful?"
+  - [ ] Contextual prompts: "Missing a PYQ? Request one." / "Want a quiz for another subject? Suggest one." / "What would make your task list more useful?"
   - [ ] Post-feedback thank-you message referencing roadmap review
 - [ ] Roadmap page (planned / building / completed) surfacing feedback publicly
 - [ ] Per-app "explain your use case" prompts — written from a user's perspective, not assumed
@@ -45,7 +45,6 @@
 - [ ] Update color scheme per subject
 - [ ] Concentric circle visualization in results
 - [ ] Show correct option at end with tick/cross feedback
-- [ ] Leaderboard across users
 
 ### Grades
 - [ ] Brighter red for target simulator
@@ -63,9 +62,6 @@
 - [ ] Improve color scheme
 - [ ] Usage guide for this tool
 - [ ] Fill empty states with dummy data
-
-### Eng Tracker
-- [ ] Likely needs a full UI refactor
 
 ### Later
 - [ ] Notes feature

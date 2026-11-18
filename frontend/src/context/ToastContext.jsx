@@ -1,32 +1,28 @@
-import { useState } from "react";
+import { useCallback } from "react";
+import { toast } from "sonner";
 import { ToastContext } from "./toastValue";
+import { Toaster } from "../components/ui/sonner";
 
 export function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([]);
-
-  const showToast = (message, type = "info") => {
-    const id = Date.now();
-
-    const newToast = { id, message, type };
-    setToasts((prev) => [...prev, newToast]);
-
-    // auto remove
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 2500);
-  };
+  const showToast = useCallback((message, type = "info") => {
+    switch (type) {
+      case "success":
+        return toast.success(message);
+      case "error":
+        return toast.error(message);
+      case "warning":
+        return toast.warning(message);
+      case "loading":
+        return toast.loading(message);
+      default:
+        return toast.info(message);
+    }
+  }, []);
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ showToast, toast }}>
       {children}
-
-      <div id="toastContainer">
-        {toasts.map((toast) => (
-          <div key={toast.id} className={`toast ${toast.type}`}>
-            {toast.message}
-          </div>
-        ))}
-      </div>
+      <Toaster />
     </ToastContext.Provider>
   );
 }

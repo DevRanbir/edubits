@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Layout
-- `backend/` — Express 5 + Mongoose 9, CommonJS, entry `server.js`, port 5001. Routes under `routes/` + `features/programming/` (self-contained feature module with its own models/controllers/routes).
+- `backend/` — Express 5 + Mongoose 9, CommonJS, entry `server.js`, port 5001. API routes are under `routes/`.
 - `frontend/` — React 18 + Vite 8, ESM, feature modules under `src/features/`, shared UI in `src/components/`, contexts in `src/context/`.
 - Root has no package.json — install/run each side separately.
 
@@ -19,7 +19,6 @@
 - Rate limit: 150 req / 15 min / IP globally in `server.js`.
 - Resource and avatar uploads use in-memory Multer validation and Cloudinary storage; no upload route writes to or serves `backend/uploads/`.
 - Frontend routing is defined in `src/app/App.jsx` (lazy imports); `src/app/routes.jsx` is an intentional empty stub.
-- UG Life Tracker persists to localStorage (`trackerStorage.js`), not the backend — TODO flags moving it to MongoDB.
 - Quiz feature has its own duplicate Login/Register/Navbar pages under `features/quiz/pages` and `features/quiz/components/UI`; main pages live in `src/pages/`.
 - `frontend/dist/` is a committed-looking build artifact dir; it's gitignored — don't hand-edit.
 - Vercel SPA rewrite (`vercel.json`) sends all paths to `/`; keep it when adding routes.

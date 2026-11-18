@@ -51,10 +51,8 @@ Find question papers and solutions in one place, and keep track of the papers yo
 - **SGPA and CGPA calculators** — calculate semester grades and explore CGPA goals.
 - **Internal marks calculator** — work out marks across different subject formats.
 - **Task tracker** — organize assignments and projects by status, priority, and deadline.
-- **UG Life Tracker** — keep a semester calendar, weekly reflections, and personal progress.
-- **Programming roadmap** — move through topics and track problem-solving progress.
 
-Calculators and the UG Life Tracker save their data in your browser. Tasks, quiz progress, and programming progress are stored in your Edubits account.
+Calculators save their data in your browser. Tasks and quiz progress are stored in your Edubits account.
 
 <br />
 

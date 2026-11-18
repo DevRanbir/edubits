@@ -38,10 +38,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
-  totalScore: {
-    type: Number,
-    default: 0,
-  },
   progress: {
     type: Map,
     of: new mongoose.Schema({

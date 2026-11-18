@@ -1,0 +1,474 @@
+/* ============================================================================
+   Edubits — Subject Page Workspace (AI Site Notes IDE Layout)
+   ============================================================================ */
+
+.subject-workspace-page {
+  min-height: 100vh;
+  max-width: 1100px;
+  margin: 0 auto;
+  background-color: var(--bg, #010102);
+  color: var(--text, #f7f8f8);
+  position: relative;
+  padding: 0 24px 60px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Header & Breadcrumb (Exact 1:1 Match to YearPage ResourcesHome Header) */
+.subject-workspace-header {
+  width: 100%;
+  margin: 0 0 20px;
+  padding: 36px 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.subject-workspace-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.subject-workspace-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.subject-workspace-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 1.9rem;
+  letter-spacing: -0.02em;
+  color: var(--primary, #3e9b8f);
+}
+
+.subject-workspace-heading svg {
+  color: var(--primary, #3e9b8f);
+  flex-shrink: 0;
+}
+
+/* Resource Category Switcher (Exact 1:1 Match to .res-year-switcher) */
+.subject-tab-switcher {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.04));
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+}
+
+.subject-tab-switcher-btn {
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--muted, #8a8f98);
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.subject-tab-switcher-btn:hover {
+  color: var(--text, #ffffff);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.subject-tab-switcher-btn.active {
+  background: var(--primary, #3e9b8f);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(62, 155, 143, 0.35);
+}
+
+/* Item Status Badges in Explorer */
+.tooldeck-explorer-item-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #8a8f98;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.tooldeck-explorer-item-badge.attempted {
+  background: rgba(62, 155, 143, 0.15);
+  color: var(--primary, #3e9b8f);
+  border-color: rgba(62, 155, 143, 0.3);
+}
+
+.tooldeck-explorer-item-badge.available {
+  background: rgba(62, 155, 143, 0.15);
+  color: #4dbfae;
+  border-color: rgba(62, 155, 143, 0.3);
+}
+
+.tooldeck-explorer-item-badge.empty {
+  opacity: 0.55;
+  color: #62666d;
+}
+
+/* Checkbox Button in Explorer Item Content */
+.tooldeck-item-checkbox-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 2px;
+  margin-right: 6px;
+  cursor: pointer;
+  color: #8a8f98;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.tooldeck-item-checkbox-btn:hover {
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.tooldeck-item-checkbox-btn.checked {
+  color: var(--primary, #3e9b8f);
+}
+
+body.light .tooldeck-item-checkbox-btn {
+  color: #8a8f98;
+}
+
+body.light .tooldeck-item-checkbox-btn:hover {
+  color: #0b1413;
+}
+
+body.light .tooldeck-item-checkbox-btn.checked {
+  color: var(--primary, #3e9b8f);
+}
+
+/* Workspace Frame: centered, reduced overall width, zero inner side padding */
+.subject-workspace-page .tooldeck-workspace-frame {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Header Left & Tabs Cluster */
+.tooldeck-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+}
+
+/* Single Unified Row Right Tools & Actions */
+.tooldeck-header-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.tooldeck-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+/* Icon-only Actions with No Outline and No Background */
+.tooldeck-icon-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #8a8f98;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease, opacity 0.15s ease;
+  padding: 0;
+  margin: 0;
+}
+
+.tooldeck-icon-action-btn:hover {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #ffffff;
+}
+
+body.light .tooldeck-icon-action-btn {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #64748b;
+}
+
+body.light .tooldeck-icon-action-btn:hover {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #0f172a;
+}
+
+/* Variant Switcher Pill in Single Header Row */
+.subject-variant-group {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.subject-variant-btn {
+  padding: 3px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #8a8f98;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.subject-variant-btn:hover:not(:disabled) {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.subject-variant-btn.active {
+  background: var(--primary, #3e9b8f);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(62, 155, 143, 0.35);
+}
+
+.subject-variant-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Attempt Button */
+.subject-attempt-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #8a8f98;
+  transition: all 0.15s ease;
+}
+
+.subject-attempt-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.subject-attempt-toggle-btn.done {
+  background: rgba(62, 155, 143, 0.15);
+  border-color: rgba(62, 155, 143, 0.35);
+  color: var(--primary, #3e9b8f);
+}
+
+/* Custom Sleek Scrollbar & Full-Width PDF Container */
+.tooldeck-pdf-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.tooldeck-pdf-container::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.tooldeck-pdf-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tooldeck-pdf-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
+
+.tooldeck-pdf-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(62, 155, 143, 0.7);
+}
+
+.tooldeck-pdf-iframe {
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  border: none;
+  display: block;
+  background: #18191d;
+}
+
+/* Video Stage */
+.subject-video-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #030407;
+  overflow-y: auto;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.subject-video-card-frame {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #090a0d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.subject-video-player-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.subject-video-player-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.subject-video-card-info {
+  padding: 1.25rem 1.5rem;
+}
+
+.subject-video-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.subject-video-card-desc {
+  font-size: 13px;
+  color: #8a8f98;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.subject-video-yt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: #ff0000;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.subject-video-yt-btn:hover {
+  opacity: 0.9;
+}
+
+/* Empty Paper Slot State in Editor */
+.subject-empty-slot-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem;
+  text-align: center;
+  color: #8a8f98;
+}
+
+.subject-empty-slot-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #62666d;
+  margin-bottom: 1.25rem;
+}
+
+.subject-empty-slot-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px;
+}
+
+.subject-empty-slot-desc {
+  font-size: 13.5px;
+  color: #8a8f98;
+  max-width: 400px;
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
+}
+
+.subject-empty-slot-tag {
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: #8a8f98;
+}
+
+@media (max-width: 768px) {
+  .subject-workspace-page {
+    padding: 0 12px 60px;
+  }
+  .subject-workspace-heading {
+    font-size: 20px;
+  }
+}

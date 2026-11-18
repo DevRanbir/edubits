@@ -40,11 +40,11 @@ Roles: `user` and `admin`. Admins upload and manage resources; everyone else con
 ### 4.2 In scope, not mandatory
 - Task Tracker — deadline-first rework. Scheduled last in the 15-day window; may slip without blocking the release.
 
-### 4.3 Hidden for now
+### 4.3 Removed from the current product
 - UG Life Tracker (Engineering Tracker)
 - Programming
 
-Both are removed from the homepage and navigation. Their code is left untouched.
+UG Life Tracker and Programming have been removed from the current app, including their routes and feature code.
 
 ### 4.4 Out of scope
 - Apple sign-in
@@ -128,7 +128,6 @@ Both are removed from the homepage and navigation. Their code is left untouched.
 
 ## 8. Settled decisions
 
-- **Programming on the homepage:** Keep it hidden from the homepage and its tool navigation.
 - **Resources paper order:** Show papers in exam sequence: MST 1, MST 2, then EST. The frontend must not override that order with alphabetical `paperTag` sorting (`ERRORS.md` R5).
 - **Remembering the student's year:** Do not store or remember it. Resources should not personalize the starting year.
 - **Legal pages:** Deferred for now; do not build Privacy, Terms, or Cookies pages in this iteration.

@@ -22,8 +22,8 @@ export default function RegisterPage() {
     if (index >= strength) return "#374151";
     if (strength === 1) return "#ef4444";
     if (strength === 2) return "#f59e0b";
-    if (strength === 3) return "#3b82f6";
-    if (strength === 4) return "#22c55e";
+    if (strength === 3) return "#3e9b8f";
+    if (strength === 4) return "#5cc2b4";
     return "#374151";
   };
 

@@ -173,9 +173,7 @@ app.use("/api/resources",   require("./routes/resourceRoutes"));
 app.use("/api/topics",      require("./routes/topics"));
 app.use("/api/questions",   require("./routes/questions"));
 app.use("/api/quiz",        require("./routes/quiz"));
-app.use("/api/leaderboard", require("./routes/leaderboard"));
 app.use("/api/users",       require("./routes/users"));
-app.use("/api/programming", require("./features/programming/routes/programmingRoutes"));
 
 app.get("/", (req, res) => {
   res.json({ message: "Edubits API running", status: "ok" });

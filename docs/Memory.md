@@ -127,7 +127,7 @@ Running record of what is done and what is in progress. At the end of each sessi
 ### 2026-10-20 — Planning session
 - Reviewed the v2.0 plan PDF and the repo zip.
 - Drafted PRD.md, feature.md, rules.md, phases.md and memory.md.
-- Decided: Task Tracker included (deadline-first, Kanban secondary, last); GitHub and Microsoft sign-in added; Proton skipped; Apple dropped; Programming and UG Life Tracker hidden; Cloudinary for storage and `react-pdf` for the viewer; two linked PDFs per paper.
+- Decided: Task Tracker included (deadline-first, Kanban secondary, last); GitHub and Microsoft sign-in added; Proton skipped; Apple dropped; Programming and UG Life Tracker were later removed from the current app; Cloudinary for storage and `react-pdf` for the viewer; two linked PDFs per paper.
 - Confirmed Cloudinary free accounts block PDF delivery unless it is enabled in Security settings.
 - No code changed.
 
@@ -306,7 +306,7 @@ See `ERRORS.md` for complete error tracking including linting issues, build erro
 - `src/app/routes.jsx` is an empty stub; routing lives in `App.jsx`.
 - `src/UploadTest.jsx` is a stray test file.
 - `AGENTS.md` lists `CLOUD_NAME`/`CLOUD_KEY`/`CLOUD_SECRET`, but the code reads `CLOUDINARY_*`.
-- `claude.md` is stale: it lists 6 quiz topics (the seed has 10) and omits the Programming feature.
+- `claude.md` is stale: it lists 6 quiz topics (the seed has 10) and describes the now-removed Programming feature.
 
 **Linting errors (see `ERRORS.md` for full list):**
 - 15+ unused variable warnings across components
