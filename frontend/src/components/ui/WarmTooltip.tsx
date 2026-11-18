@@ -28,7 +28,7 @@ import {
   useVelocity,
   type MotionStyle,
   type Variants
-} from 'motion/react';
+} from 'framer-motion';
 
 import './WarmTooltip.css';
 

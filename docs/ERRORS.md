@@ -194,7 +194,7 @@ Found in the 2026-10-22 review of the Resources feature and the homepage. Lint a
 
 ### Fixed: Rate limiter shared one IP, CORS accepted any *.vercel.app, error handler masked 4xx
 **Files:** `backend/server.js`, `backend/.env.example`, `.gitignore`  
-**Fix:** `app.set("trust proxy", 1)`; explicit CORS allow-list (`FRONTEND_URL`, `CORS_ORIGINS`); required env vars checked at startup; malformed JSON and multer errors return 400 and 5xx messages are hidden in production; `.env.example` now matches the variable names the code reads; `backend/uploads/` added to `.gitignore`  
+**Fix:** `app.set("trust proxy", 1)`; authenticated rate-limit buckets use the user ID while anonymous requests use client IP; CORS allows the exact `FRONTEND_URL` and local port 5173 outside production; required env vars checked at startup; malformed JSON and multer errors return 400 and 5xx messages are hidden in production; `.env.example` matches the variables the code reads; `backend/uploads/` is ignored.
 **Date:** 2026-10-21
 
 ### Fixed: ESLint reported used components as unused
@@ -269,7 +269,7 @@ Found in the 2026-10-22 review of the Resources feature and the homepage. Lint a
 ### High Priority
 1. **Run `npm run build` locally.** The 2026-10-21 audit could not build (the `node_modules` in the zip came from macOS arm64 and Rolldown's native binding is platform-specific). Never zip or commit `node_modules`.
 2. **Retest OAuth end-to-end** (Google, GitHub, Microsoft) on the deployed backend - the verify-callback bug meant it had likely never succeeded.
-3. **Set production env vars** on Render: `BACKEND_URL`, `FRONTEND_URL`, `NODE_ENV=production`, `CORS_ORIGINS` (for any Vercel preview URLs you need), and on Vercel: `VITE_API_URL` (must end in `/api`).
+3. **Set production env vars** on Render: `BACKEND_URL`, `FRONTEND_URL`, `NODE_ENV=production`; on Vercel: `VITE_API_URL` (must end in `/api`). Set `FRONTEND_URL` to the exact frontend origin; preview domains require explicit configuration.
 4. Run `git rm -r --cached backend/uploads` so the 22 already-tracked images leave the repo (`.gitignore` only stops new ones).
 
 ### Medium Priority
@@ -280,7 +280,7 @@ Found in the 2026-10-22 review of the Resources feature and the homepage. Lint a
 
 ### Low Priority
 9. Clean up stray files - `src/UploadTest.jsx`, `src/app/routes.jsx`, empty `backend/middleware/avatarUpload.js` (`HomeFooter.jsx` is now the shared homepage footer, no longer stray).
-10. Consolidate `adminOnly` middleware - defined in both `resourceRoutes.js` and `pyqRoutes.js`.
+10. `adminOnly` middleware is shared from `backend/middleware/adminOnly.js`.
 11. Standardise response shapes - `pyqProgressRoutes` returns `{ error }`, others return `{ success, message }`.
 12. Update `claude.md` - stale (lists 6 quiz topics, seed has 10).
 13. Replace the JWT-in-URL OAuth redirect with a one-time code exchange.

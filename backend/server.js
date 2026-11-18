@@ -6,6 +6,7 @@ const cors       = require("cors");
 const { randomUUID } = require("crypto");
 const rateLimit  = require("express-rate-limit");
 const helmet     = require("helmet");
+const rateLimitKey = require("./middleware/rateLimitKey");
 const connectDB  = require("./config/db");
 
 const requiredEnv = [
@@ -108,8 +109,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Behind Render/Vercel/etc. there is one proxy hop. Without this, every user
-// shares the proxy's IP and the rate limiter below counts them all together.
+// Preserve the client IP for anonymous rate-limit buckets behind one proxy hop.
 app.set("trust proxy", 1);
 
 const allowedOrigins = new Set(
@@ -145,10 +145,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate limiting — 150 requests per 15 minutes per IP
+// Authenticated requests are isolated by user; anonymous requests use client IP.
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 150,
+  keyGenerator: rateLimitKey,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please slow down" },
@@ -157,7 +158,13 @@ app.use(rateLimit({
 app.use(express.json());
 app.use(passport.initialize());
 app.use((req, res, next) => {
-  console.info(`[${new Date().toISOString()}] [${req.requestId}] ${req.method}`);
+  const startedAt = process.hrtime.bigint();
+  res.on("finish", () => {
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
+    console.info(
+      `[${new Date().toISOString()}] [${req.requestId}] ${req.method} ${req.path} ${res.statusCode} ${durationMs.toFixed(1)}ms`
+    );
+  });
   next();
 });
 

@@ -39,7 +39,7 @@ Express 5 API (Render free tier, /health pinged by UptimeRobot)
    └── OAuth via Passport (Google today; GitHub, Microsoft proposed) → redirect to FE /auth/callback?token=&user=
 ```
 
-**Auth:** email/password (bcrypt) or OAuth provider → JWT (7 days) → `authMiddleware` sets `req.user`. Admin check is a local `adminOnly` function inside `resourceRoutes.js` and `pyqRoutes.js`.
+**Auth:** email/password (bcrypt) or OAuth provider → JWT (7 days) → `authMiddleware` sets `req.user`. Admin-only routes use the shared `middleware/adminOnly.js`.
 
 **Client-side only:** SGPA, CGPA, Internal Marks.
 
@@ -79,7 +79,7 @@ All routes are under `/api`.
 | `/pyq-progress` | `GET /` all progress for the user; `PUT /:paperId` upsert attempted + notes |
 | `/health` | liveness |
 
-Global rate limit: 150 requests / 15 min / IP.
+Global rate limit: 150 requests / 15 min per authenticated user or anonymous client IP.
 
 ## 5. Folder structure
 

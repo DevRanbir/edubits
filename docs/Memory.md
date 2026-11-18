@@ -292,8 +292,8 @@ Running record of what is done and what is in progress. At the end of each sessi
 See `ERRORS.md` for complete error tracking including linting issues, build errors, and fixes.
 
 **Current active issues:**
-- `server.js` logs the request Origin and every request line; noisy in production.
-- `adminOnly` is defined separately in `resourceRoutes.js` and `pyqRoutes.js`.
+- `server.js` logs request method, path, status, and duration.
+- Admin-only routes share `backend/middleware/adminOnly.js`.
 - `/admin-upload` has no frontend role guard; the backend enforces admin.
 - Response shapes are inconsistent: `pyqProgressRoutes` returns `{ error }`, `pyqRoutes` returns `{ success, message }`.
 - `PYQsPage.jsx` (1,139 lines, with the hardcoded `PAPER_SOURCES` list of Google Drive links) is dead code: it is not imported and `/pyqs` redirects to `/resources`. The Resources pages use `/api/pyq-progress`; only this dead file keeps its own progress hook (`ERRORS.md` D1).
