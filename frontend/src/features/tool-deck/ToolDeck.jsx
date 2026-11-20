@@ -408,6 +408,7 @@ export default function ToolDeck({ initialTab = "todos" }) {
           activeTab={activeTab}
           onTabChange={handleTabChange}
           tabs={navTabs}
+          mobileIconOnly
         />
       </div>
 

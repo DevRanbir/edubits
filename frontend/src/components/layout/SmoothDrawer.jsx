@@ -262,6 +262,7 @@ export default function SmoothDrawer({
   const handleLogout = () => {
     logout();
     onOpenChange(false);
+    showToast("success", "Logged out successfully");
     navigate("/");
   };
 
@@ -303,6 +304,8 @@ export default function SmoothDrawer({
                     type="button"
                     onClick={() => handleTabSelect(t.id)}
                     className={`smooth-drawer-tab-btn ${tab === t.id ? "active" : ""}`}
+                    aria-label={t.label}
+                    title={t.label}
                   >
                     <IconComponent size={17} />
                     <span>{t.label}</span>
@@ -316,6 +319,8 @@ export default function SmoothDrawer({
                     type="button"
                     onClick={handleLogout}
                     className="smooth-drawer-logout-btn"
+                    aria-label="Log Out"
+                    title="Log Out"
                   >
                     <LogOut size={17} />
                     <span>Log Out</span>
@@ -329,6 +334,8 @@ export default function SmoothDrawer({
                     }}
                     className="smooth-drawer-tab-btn"
                     style={{ color: "var(--primary)" }}
+                    aria-label="Sign In"
+                    title="Sign In"
                   >
                     <User size={17} />
                     <span>Sign In</span>
@@ -428,6 +435,49 @@ export default function SmoothDrawer({
                     <h3 className="smooth-drawer-title">Account & Security</h3>
                     <p className="smooth-drawer-subtitle">Manage your personal profile, credentials, and avatar.</p>
                   </header>
+
+                  {user && (
+                    <div className="smooth-drawer-card smooth-drawer-session-card" style={{ marginBottom: 20 }}>
+                      <div className="smooth-drawer-card-info">
+                        <div
+                          className="smooth-drawer-card-icon"
+                          style={{
+                            color: "var(--danger, #ef4444)",
+                            background: "rgba(239, 68, 68, 0.1)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 38,
+                            height: 38,
+                            borderRadius: 10,
+                          }}
+                        >
+                          <LogOut size={18} />
+                        </div>
+                        <div className="smooth-drawer-card-text">
+                          <h4>Active Session</h4>
+                          <p>Signed in as <strong>{user.email}</strong></p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="smooth-drawer-btn"
+                        style={{
+                          color: "#ef4444",
+                          borderColor: "rgba(239, 68, 68, 0.35)",
+                          background: "rgba(239, 68, 68, 0.08)",
+                          fontWeight: 600,
+                          gap: 7,
+                          padding: "8px 16px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <LogOut size={14} />
+                        <span>Log Out</span>
+                      </button>
+                    </div>
+                  )}
 
                   {user ? (
                     <form onSubmit={handleUpdateProfile}>
