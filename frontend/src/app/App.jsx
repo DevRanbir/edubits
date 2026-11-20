@@ -23,13 +23,7 @@ const ResourcesLayout = lazy(() => import("../features/resources/ResourcesLayout
 const TopicsPage = lazy(() => import("../features/quiz/pages/TopicsPage"));
 const QuizPage = lazy(() => import("../features/quiz/pages/QuizPage"));
 const ResultsPage = lazy(() => import("../features/quiz/pages/ResultsPage"));
-const LeaderboardPage = lazy(() => import("../features/quiz/pages/LeaderboardPage"));
 const HistoryPage = lazy(() => import("../features/quiz/pages/HistoryPage"));
-
-const ProgrammingPage = lazy(() => import("../features/programming/pages/ProgrammingPage"));
-const TopicProblemsPage = lazy(() => import("../features/programming/pages/TopicProblemsPage"));
-const ProgrammingAdmin = lazy(() => import("../features/programming/pages/ProgrammingAdmin"));
-const AboutPage = lazy(() => import("../features/about/AboutPage"));
 
 function AppInner() {
   const { user, authReady, showOnboarding, setShowOnboarding } = useAuth();
@@ -71,12 +65,7 @@ function AppInner() {
               <Route path="/quizzes" element={<TopicsPage />} />
               <Route path="/quizzes/:topicId" element={<QuizPage />} />
               <Route path="/quizzes/results" element={<ResultsPage />} />
-              <Route path="/quizzes/leaderboard" element={<LeaderboardPage />} />
               <Route path="/quizzes/history" element={<HistoryPage />} />
-
-              <Route path="/programming" element={<ProgrammingPage />} /> 
-              <Route path="/programming/admin" element={<ProgrammingAdmin />} />
-              <Route path="/programming/:topicId" element={<TopicProblemsPage />} />
 
               <Route path="/about" element={<Navigate to="/" replace />} />
 

@@ -25,7 +25,7 @@ Working rules for anyone (human or AI agent) changing this codebase. Each rule e
 - Never return a whole Mongoose document from an auth or user route. Return `{ id, name, email, avatar, role, ... }` or `.select("-password")`.
 - User uploads go to Cloudinary, never to local disk (Render's disk is wiped on every deploy). `backend/uploads/` is git-ignored.
 - Every write route needs `authMiddleware`; admin-only routes also need `adminOnly`.
-- CORS is an allow-list (`FRONTEND_URL`, `CORS_ORIGINS`). Do not add wildcard or `*.vercel.app` patterns.
+- CORS allows the exact `FRONTEND_URL`; non-production mode also allows `http://localhost:5173`. There is no `CORS_ORIGINS` variable or wildcard support.
 - Passport verify callbacks have the signature `(accessToken, refreshToken, profile, done)`.
 - Endpoints that serve students must not return other users' personal data. Do not `.populate()` a user's name or email into a list response; select only what the UI renders (R7).
 

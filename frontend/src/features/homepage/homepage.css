@@ -49,6 +49,27 @@ body.light .hp-everything {
   --primary-deep: #115d62;
 }
 
+.hp-everything a,
+.hp-everything a:hover,
+.hp-everything a:focus {
+  text-decoration: none !important;
+}
+
+body.light .hp-everything {
+  --bg: #f7faf9;
+  --surface: #ffffff;
+  --surface-2: #edf3f2;
+  --border: #d4dedd;
+  --border-strong: #b8c8c6;
+  --text: #0b1413;
+  --text-secondary: #273836;
+  --muted: #536764;
+  --primary: #287d72;
+  --primary-hover: #1e635a;
+  --on-primary: #ffffff;
+  --primary-deep: #115d62;
+}
+
 .hp-main {
   flex: 1;
   display: flex;

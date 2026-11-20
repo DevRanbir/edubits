@@ -1,5 +1,0 @@
-/* Inherits global custom small scrollbar from variables.css */
-
-.ugl-page input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.5);
-}

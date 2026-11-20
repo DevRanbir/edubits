@@ -433,3 +433,50 @@ body.light .res-card-meta {
   color: #287d72 !important;
   text-shadow: none !important;
 }
+
+/* Light mode overrides */
+body.light .res-year-switcher {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light .res-year-switcher-btn {
+  color: #536764;
+}
+
+body.light .res-year-switcher-btn:hover {
+  background: #f0f4f4;
+  color: #0b1413;
+}
+
+body.light .res-year-switcher-btn.active {
+  background: #287d72;
+  color: #ffffff;
+}
+
+body.light .res-thumb-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+}
+
+body.light .res-thumb-card:hover {
+  border-color: #3e9b8f;
+  box-shadow: 0 12px 32px rgba(62, 155, 143, 0.12);
+}
+
+body.light .res-card-ascii-wrap {
+  opacity: 0.38;
+}
+
+body.light .res-card-title {
+  color: #0b1413 !important;
+  text-shadow: none !important;
+  font-weight: 700;
+}
+
+body.light .res-card-desc,
+body.light .res-card-meta {
+  color: #287d72 !important;
+  text-shadow: none !important;
+}

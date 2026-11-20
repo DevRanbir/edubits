@@ -5,12 +5,7 @@ const {
 } = require("../controllers/topicController");
 
 const protect = require("../middleware/authMiddleware");
-const adminOnly = (req, res, next) => {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-  next();
-};
+const adminOnly = require("../middleware/adminOnly");
 
 router.get("/",        protect, getTopics);
 router.get("/:id",     protect, getTopic);

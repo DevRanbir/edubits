@@ -54,11 +54,6 @@ export function sortByDifficulty(questions) {
   );
 }
 
-export function sortLeaderboard(entries) {
-  return [...entries].sort((a, b) =>
-    b.score !== a.score ? b.score - a.score : a.name?.localeCompare(b.name)
-  );
-}
 export function formatTime(seconds) {
   const m = Math.floor(seconds / 60).toString().padStart(2, "0");
   const s = (seconds % 60).toString().padStart(2, "0");

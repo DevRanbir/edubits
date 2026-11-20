@@ -43,7 +43,7 @@ export const features = [
     id: "quizzes",
     eyebrow: "QuizEngine",
     title: "Practice for NPTEL and college viva",
-    desc: "Take quizzes by topic, review your results and history, and see where you rank on the leaderboard.",
+    desc: "Take quizzes by topic, review your results and track your progress.",
     image: "/images/homepage/Quiz.png",
     alt: "Edubits QuizEngine page",
   },

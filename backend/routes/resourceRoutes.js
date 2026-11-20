@@ -2,6 +2,7 @@ const express  = require("express");
 const router   = express.Router();
 const protect  = require("../middleware/authMiddleware");
 const { uploadFor } = require("../middleware/upload");
+const adminOnly = require("../middleware/adminOnly");
 const rateLimit = require("express-rate-limit");
 const {
   uploadResource,
@@ -13,13 +14,6 @@ const {
   deleteResource,
   updateResource,
 } = require("../controllers/resourceController");
-
-const adminOnly = (req, res, next) => {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ success: false, error: "Admin access required." });
-  }
-  next();
-};
 
 const withMulterErrors = (multerMiddleware) => (req, res, next) => {
   multerMiddleware(req, res, (err) => {

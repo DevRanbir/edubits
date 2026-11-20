@@ -127,7 +127,7 @@ Running record of what is done and what is in progress. At the end of each sessi
 ### 2026-10-20 — Planning session
 - Reviewed the v2.0 plan PDF and the repo zip.
 - Drafted PRD.md, feature.md, rules.md, phases.md and memory.md.
-- Decided: Task Tracker included (deadline-first, Kanban secondary, last); GitHub and Microsoft sign-in added; Proton skipped; Apple dropped; Programming and UG Life Tracker hidden; Cloudinary for storage and `react-pdf` for the viewer; two linked PDFs per paper.
+- Decided: Task Tracker included (deadline-first, Kanban secondary, last); GitHub and Microsoft sign-in added; Proton skipped; Apple dropped; Programming and UG Life Tracker were later removed from the current app; Cloudinary for storage and `react-pdf` for the viewer; two linked PDFs per paper.
 - Confirmed Cloudinary free accounts block PDF delivery unless it is enabled in Security settings.
 - No code changed.
 
@@ -292,8 +292,8 @@ Running record of what is done and what is in progress. At the end of each sessi
 See `ERRORS.md` for complete error tracking including linting issues, build errors, and fixes.
 
 **Current active issues:**
-- `server.js` logs the request Origin and every request line; noisy in production.
-- `adminOnly` is defined separately in `resourceRoutes.js` and `pyqRoutes.js`.
+- `server.js` logs request method, path, status, and duration.
+- Admin-only routes share `backend/middleware/adminOnly.js`.
 - `/admin-upload` has no frontend role guard; the backend enforces admin.
 - Response shapes are inconsistent: `pyqProgressRoutes` returns `{ error }`, `pyqRoutes` returns `{ success, message }`.
 - `PYQsPage.jsx` (1,139 lines, with the hardcoded `PAPER_SOURCES` list of Google Drive links) is dead code: it is not imported and `/pyqs` redirects to `/resources`. The Resources pages use `/api/pyq-progress`; only this dead file keeps its own progress hook (`ERRORS.md` D1).
@@ -306,7 +306,7 @@ See `ERRORS.md` for complete error tracking including linting issues, build erro
 - `src/app/routes.jsx` is an empty stub; routing lives in `App.jsx`.
 - `src/UploadTest.jsx` is a stray test file.
 - `AGENTS.md` lists `CLOUD_NAME`/`CLOUD_KEY`/`CLOUD_SECRET`, but the code reads `CLOUDINARY_*`.
-- `claude.md` is stale: it lists 6 quiz topics (the seed has 10) and omits the Programming feature.
+- `claude.md` is stale: it lists 6 quiz topics (the seed has 10) and describes the now-removed Programming feature.
 
 **Linting errors (see `ERRORS.md` for full list):**
 - 15+ unused variable warnings across components

@@ -63,11 +63,6 @@ export default function apiProxy(req, res) {
     target,
     { method: req.method, headers },
     (upstreamResponse) => {
-      if ((upstreamResponse.statusCode || 500) >= 400) {
-        upstreamResponse.resume();
-        sendError(upstreamResponse.statusCode || 502);
-        return;
-      }
       const responseHeaders = { ...upstreamResponse.headers, "cache-control": "no-store" };
       res.writeHead(upstreamResponse.statusCode || 502, responseHeaders);
       upstreamResponse.pipe(res);

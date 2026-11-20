@@ -2,11 +2,10 @@ const Question = require("../models/Question");
 const QuizAttempt = require("../models/QuizAttempt");
 const User = require("../models/User");
 const Topic = require("../models/Topic");
-const { pickRandom } = require("../algorithms/shuffle");
 const { sortQuestionsByDifficulty } = require("../algorithms/sorting");
 const { computeScore } = require("../algorithms/scoring");
-const { isTopicUnlocked } = require("../algorithms/graph");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const { randomUUID, createHmac } = require("crypto");
 
 const sessionOwner = (userId) => createHmac("sha256", process.env.JWT_SECRET)
@@ -17,27 +16,22 @@ const startQuiz = async (req, res) => {
   try {
     const { topicId, count = 10, sortByDifficulty = false } = req.body;
 
-    const topic = await Topic.findById(topicId).populate("prerequisites");
+    const topic = await Topic.findById(topicId);
     if (!topic) return res.status(404).json({ error: "Topic not found" });
-
-    const user = await User.findById(req.user._id);
-    const prereqIds = topic.prerequisites.map((p) => p._id.toString());
-
-    if (!isTopicUnlocked(topicId, prereqIds, user.progress)) {
-      return res.status(403).json({ error: "Complete prerequisites first to unlock this topic" });
-    }
-
-    let allQuestions = await Question.find({ topicId }).lean();
-
-    if (allQuestions.length === 0) {
-      return res.status(404).json({ error: "No questions found for this topic" });
-    }
 
     const requestedCount = Number(count);
     const questionCount = Number.isFinite(requestedCount) && requestedCount > 0
       ? Math.min(Math.floor(requestedCount), 50)
       : 10;
-    let selected = pickRandom(allQuestions, questionCount);
+
+    let selected = await Question.aggregate([
+      { $match: { topicId: new mongoose.Types.ObjectId(topicId) } },
+      { $sample: { size: questionCount } },
+    ]);
+
+    if (selected.length === 0) {
+      return res.status(404).json({ error: "No questions found for this topic" });
+    }
 
     if (sortByDifficulty) {
       selected = sortQuestionsByDifficulty(selected);
@@ -175,7 +169,6 @@ const submitQuiz = async (req, res) => {
     const user = await User.findById(req.user._id);
     user.updateTopicProgress(topicId, scoring.totalScore, passed);
 
-    user.totalScore = (user.totalScore || 0) + scoring.totalScore;
     await user.save();
 
     const enrichedHistory = scoring.history.map((h, i) => {
@@ -198,7 +191,6 @@ const submitQuiz = async (req, res) => {
       correctCount: scoring.correctCount,
       wrongCount: scoring.wrongCount,
       history: enrichedHistory,
-      newTotalScore: user.totalScore,
     });
   } catch (err) {
     if (err.code === 11000) {

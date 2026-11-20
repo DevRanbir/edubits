@@ -29,6 +29,7 @@ import {
 import MagneticMorphingNav from "../../components/layout/MagneticMorphingNav";
 import useTasks from "../../hooks/useTasks";
 import { fetchResources } from "../../services/resourceService";
+import { API_URL } from "../../config/api";
 import PdfViewer from "../resources/components/PdfViewer";
 import SGPA from "../sgpa/SGPA";
 import CGPA from "../cgpa/CGPA";
@@ -52,6 +53,7 @@ const resolveTab = (tab) => {
 };
 
 export default function ToolDeck({ initialTab = "todos" }) {
+  const settingsReady = useRef(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const queryTab = searchParams.get("tab");
 
@@ -102,6 +104,62 @@ export default function ToolDeck({ initialTab = "todos" }) {
     }
   });
 
+  // Migrate existing browser-only deck data once, then keep the server copy current.
+  useEffect(() => {
+    let active = true;
+    const keys = ["subjects", "simForm", "sgpaList", "edubits_pinned_tasks", "edubits_subtasks_map"];
+    fetch(`${API_URL}/users/me/settings`, { credentials: "include" })
+      .then((response) => response.ok ? response.json() : null)
+      .then(async (data) => {
+        if (!active || !data) return;
+        const serverSettings = data.settings || {};
+        const localSettings = Object.fromEntries(keys.flatMap((key) => {
+          try {
+            const value = localStorage.getItem(key);
+            return value === null ? [] : [[key, JSON.parse(value)]];
+          } catch { return []; }
+        }));
+        const migration = Object.fromEntries(Object.entries(localSettings).filter(([key]) => serverSettings[key] === undefined));
+        const settings = { ...localSettings, ...serverSettings };
+        if (Object.keys(migration).length) {
+          await fetch(`${API_URL}/users/me/settings`, {
+            method: "PUT", credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ settings: migration }),
+          });
+        }
+        if (!active) return;
+        for (const key of keys) {
+          if (settings[key] !== undefined) localStorage.setItem(key, JSON.stringify(settings[key]));
+        }
+        if (settings.edubits_pinned_tasks) setPinnedTasks(settings.edubits_pinned_tasks);
+        if (settings.edubits_subtasks_map) setSubtasksMap(settings.edubits_subtasks_map);
+        if (settings.sgpaList) setSgpaList(settings.sgpaList);
+        settingsReady.current = true;
+        window.dispatchEvent(new Event("edubits-settings-loaded"));
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const persistToolSettings = useCallback((patch) => {
+    if (!settingsReady.current) return;
+    const keys = ["subjects", "simForm", "sgpaList", "edubits_pinned_tasks", "edubits_subtasks_map"];
+    const settings = {};
+    for (const key of keys) {
+      try {
+        const value = localStorage.getItem(key);
+        if (value !== null) settings[key] = JSON.parse(value);
+      } catch { /* ignore malformed legacy values */ }
+    }
+    fetch(`${API_URL}/users/me/settings`, {
+      method: "PUT", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ settings: { ...settings, ...patch } }),
+    }).catch(() => {});
+  }, []);
+
+
   const [newSubtaskInputs, setNewSubtaskInputs] = useState({});
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingText, setEditingText] = useState("");
@@ -131,6 +189,8 @@ export default function ToolDeck({ initialTab = "todos" }) {
     } catch {
       // ignore
     }
+    persistToolSettings({ edubits_pinned_tasks: updated });
+
   };
 
   const handleToggleTaskStatus = (task) => {
@@ -188,6 +248,8 @@ export default function ToolDeck({ initialTab = "todos" }) {
     } catch {
       // ignore
     }
+    persistToolSettings({ edubits_subtasks_map: nextMap });
+
   };
 
   const handleToggleSubtask = (taskId, subtaskId) => {
@@ -202,6 +264,8 @@ export default function ToolDeck({ initialTab = "todos" }) {
     } catch {
       // ignore
     }
+    persistToolSettings({ edubits_subtasks_map: nextMap });
+
   };
 
   const handleDeleteSubtask = (taskId, subtaskId) => {
@@ -214,6 +278,8 @@ export default function ToolDeck({ initialTab = "todos" }) {
     } catch {
       // ignore
     }
+    persistToolSettings({ edubits_subtasks_map: nextMap });
+
   };
 
   const filteredTasks = useMemo(() => {
@@ -332,7 +398,8 @@ export default function ToolDeck({ initialTab = "todos" }) {
     } catch {
       // ignore
     }
-  }, [sgpaList]);
+    persistToolSettings({ sgpaList });
+  }, [sgpaList, persistToolSettings]);
 
   // Main navigation tabs (Todos, Notes, SGPA, CGPA, Internals)
   const navTabs = [

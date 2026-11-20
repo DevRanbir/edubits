@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../../context/authValue";
-import { BarChart3, GitBranch, Network, Shuffle, Zap } from "lucide-react";
+import { GitBranch, Network, Shuffle, Zap } from "lucide-react";
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -10,7 +10,6 @@ export default function HomePage() {
     { icon: Shuffle, title: "Smart Shuffle", desc: "Fisher-Yates algorithm ensures perfectly random, non-repeating questions every session." },
     { icon: Network, title: "Graph-Based Learning", desc: "Topics are structured as a Directed Acyclic Graph (DAG), ensuring a logical learning path through prerequisites." },
     { icon: GitBranch,  title: "Dependency Unlocking", desc: "Topics unlock dynamically based on completed prerequisites using graph traversal logic." },
-    { icon: BarChart3, title: "Live Leaderboard",     desc: "Compete with others. Real-time rankings sorted by score using efficient algorithms." },
   ];
 
   return (
@@ -22,7 +21,7 @@ export default function HomePage() {
           <span style={{ color: "var(--accent)" }}>QuizEngine</span>
         </h1>
         <p style={{ color: "var(--text-2)", fontSize: "1.15rem", maxWidth: 560, margin: "0 auto 2.5rem", lineHeight: 1.7 }}>
-          An algorithm-powered quiz platform with adaptive scoring, dependency-based topic unlocking, and real-time leaderboards.
+          An algorithm-powered quiz platform with adaptive scoring and dependency-based topic unlocking.
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           {user ? (

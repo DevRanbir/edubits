@@ -40,6 +40,17 @@ export function AuthProvider({ children }) {
       .then((data) => {
         if (!active) return;
         const currentUser = data?.user || null;
+        if (currentUser && (!currentUser.academicYear || !currentUser.academicProgram)) {
+          const academicYear = localStorage.getItem("edubits_academic_year") || "";
+          const academicProgram = localStorage.getItem("edubits_academic_program") || "";
+          if (academicYear || academicProgram) {
+            fetch(`${API_URL}/users/me`, {
+              method: "PUT", credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ academicYear, academicProgram }),
+            }).catch(() => {});
+          }
+        }
         setUser(currentUser);
         setShowOnboarding(Boolean(currentUser && !currentUser.onboardingCompleted));
       })

@@ -6,6 +6,7 @@ const cors       = require("cors");
 const { randomUUID } = require("crypto");
 const rateLimit  = require("express-rate-limit");
 const helmet     = require("helmet");
+const rateLimitKey = require("./middleware/rateLimitKey");
 const connectDB  = require("./config/db");
 
 const requiredEnv = [
@@ -90,8 +91,7 @@ app.use(helmet({
     : false,
 }));
 
-// Give each request a safe correlation ID and prevent controller catch blocks
-// from returning database or infrastructure error details to clients.
+// Give each request a safe correlation ID.
 app.use((req, res, next) => {
   const forwardedRequestId = req.get("X-Request-ID");
   req.requestId = /^[0-9a-f-]{36}$/i.test(forwardedRequestId || "")
@@ -114,8 +114,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Behind Render/Vercel/etc. there is one proxy hop. Without this, every user
-// shares the proxy's IP and the rate limiter below counts them all together.
+// Preserve the client IP for anonymous rate-limit buckets behind one proxy hop.
 app.set("trust proxy", 1);
 
 const allowedOrigins = new Set(
@@ -123,7 +122,7 @@ const allowedOrigins = new Set(
     process.env.FRONTEND_URL,
     // Local development only
     ...(process.env.NODE_ENV !== "production"
-      ? ["http://localhost:5173"]
+      ? ["http://localhost:5173", "http://localhost:5174"]
       : []),
   ]
     .map((o) => (o || "").trim().replace(/\/$/, ""))
@@ -151,10 +150,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate limiting — 150 requests per 15 minutes per IP
+// Authenticated requests are isolated by user; anonymous requests use client IP.
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 150,
+  keyGenerator: rateLimitKey,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please slow down" },
@@ -163,7 +163,13 @@ app.use(rateLimit({
 app.use(express.json());
 app.use(passport.initialize());
 app.use((req, res, next) => {
-  console.info(`[${new Date().toISOString()}] [${req.requestId}] ${req.method}`);
+  const startedAt = process.hrtime.bigint();
+  res.on("finish", () => {
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
+    console.info(
+      `[${new Date().toISOString()}] [${req.requestId}] ${req.method} ${req.path} ${res.statusCode} ${durationMs.toFixed(1)}ms`
+    );
+  });
   next();
 });
 
@@ -179,9 +185,7 @@ app.use("/api/resources",   require("./routes/resourceRoutes"));
 app.use("/api/topics",      require("./routes/topics"));
 app.use("/api/questions",   require("./routes/questions"));
 app.use("/api/quiz",        require("./routes/quiz"));
-app.use("/api/leaderboard", require("./routes/leaderboard"));
 app.use("/api/users",       require("./routes/users"));
-app.use("/api/programming", require("./features/programming/routes/programmingRoutes"));
 
 app.get("/", (req, res) => {
   res.json({ message: "Edubits API running", status: "ok" });
@@ -198,8 +202,11 @@ app.use((err, req, res, next) => {
     err?.name === "MulterError" ? 400
     : err?.status >= 400 && err?.status < 500 ? err.status
     : 500;
+  const safeClientMessage = status < 500 && typeof err?.message === "string"
+    ? err.message
+    : "Request failed";
   res.status(status).json({
-    error: "Request failed",
+    error: safeClientMessage,
     requestId: req.requestId,
   });
 });

@@ -38,10 +38,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
-  totalScore: {
-    type: Number,
-    default: 0,
-  },
   progress: {
     type: Map,
     of: new mongoose.Schema({
@@ -64,6 +60,9 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  academicYear: { type: String, default: "", maxlength: 40 },
+  academicProgram: { type: String, default: "", maxlength: 100 },
+  toolSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
 }, 
 { timestamps: true }
 );

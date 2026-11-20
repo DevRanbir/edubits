@@ -10,7 +10,6 @@
 QuizEngine is a **full-stack algorithm-powered quiz platform** featuring:
 - **DAG-based topic progression** with prerequisite unlocking
 - **Simple scoring** (Correct: +4, Wrong: 0, Timeout: 0)
-- **Real-time leaderboards** (global + per-topic)
 - **SVG graph visualization** with pan/zoom
 - **Timed MCQ sessions** with per-question limits
 - **Session persistence** via localStorage + MongoDB
@@ -28,7 +27,6 @@ QuizEngine is a **full-stack algorithm-powered quiz platform** featuring:
 │  │   ├── QuizPage.jsx        # Active quiz session (timed)      │
 │  │   ├── ResultsPage.jsx     # Post-quiz breakdown + PDF export │
 │  │   ├── HistoryPage.jsx     # Past attempts with stats         │
-│  │   ├── LeaderboardPage.jsx # Global + topic rankings          │
 │  │   ├── LoginPage.jsx       # Quiz-specific auth               │
 │  │   └── RegisterPage.jsx                                                       │
 │  ├── components/Graph/                                        │
@@ -125,7 +123,6 @@ progress: Map<topicId, {
   bestScore: Number,
   attempts: Number
 }>
-totalScore: Number  // cumulative across all quizzes
 ```
 
 ---
@@ -255,8 +252,6 @@ function sortQuestionsByDifficulty(questions) {
 | `GET` | `/api/quiz/history` | ✅ | Last 20 attempts |
 | `GET` | `/api/topics` | ✅ | All topics (ordered + unlock status) |
 | `GET` | `/api/topics/:id` | ✅ | Single topic with prerequisites |
-| `GET` | `/api/leaderboard` | ✅ | Global leaderboard (top 20) |
-| `GET` | `/api/leaderboard/:topicId` | ✅ | Topic-specific leaderboard |
 
 ---
 
@@ -326,7 +321,6 @@ Authorization: Bearer <jwt>
       "questionText": "What is closure?"
     }
   ],
-  "newTotalScore": 1247
 }
 ```
 
@@ -419,38 +413,6 @@ const getEdgePath = (from, to) => {
 | `.is-locked` | Prereqs incomplete | 0.58 opacity, muted |
 | `.is-complete` | User completed | Green stroke |
 | `:hover` | Interactive | Glow filter, brighter stroke |
-
----
-
-## Leaderboard Algorithm
-
-**Global** (`leaderboardController.getGlobalLeaderboard`):
-```javascript
-// Sort by totalScore desc, then name asc
-const sorted = users.sort((a, b) => 
-  b.totalScore - a.totalScore || a.name.localeCompare(b.name)
-).slice(0, limit)
-```
-
-**Per-Topic** (`leaderboardController.getTopicLeaderboard`):
-```javascript
-// Aggregate best attempt per user for topic
-QuizAttempt.aggregate([
-  { $match: { topicId: ObjectId(topicId) } },
-  { $sort: { score: -1 } },
-  { $group: {
-      _id: "$userId",
-      bestScore: { $max: "$score" },
-      attempts: { $sum: 1 },
-      bestPercentage: { $max: "$percentage" }
-  }},
-  { $sort: { bestScore: -1 } },
-  { $limit: limit },
-  { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "user" }},
-  { $unwind: "$user" },
-  { $project: { name: "$user.name", score: "$bestScore", ... }}
-])
-```
 
 ---
 
@@ -552,7 +514,7 @@ Distinct from main app — QuizEngine has its own purple accent color.
 
 The quiz feature has **its own isolated UI set** under `features/quiz/`:
 - `LoginPage.jsx` / `RegisterPage.jsx` — separate from main `src/pages/`
-- `Navbar.jsx` — quiz-only nav (Topics, Leaderboard, History, score display)
+- `Navbar.jsx` — quiz-only nav (Topics, History)
 - `HomePage.jsx` — quiz landing page
 
 Main app routes (`/login`, `/register`) redirect to `/` if authenticated; quiz routes use their own auth pages at `/quizzes` → quiz login.
@@ -613,8 +575,7 @@ const POINTS = { CORRECT: 10, WRONG: -2, TIMEOUT: 0 }  // Change values
 - [ ] **Scoring: Correct = +4, Wrong = 0, Timeout = 0**
 - [ ] **No negative scoring (score never decreases)**
 - [ ] **No streak bonuses**
-- [ ] Score persists to User.totalScore and progress Map
-- [ ] Leaderboard updates after quiz submit
+- [ ] Each quiz attempt persists its score and updates the user's topic progress
 - [ ] History shows last 20 attempts with correct stats
 - [ ] Graph pan/zoom works on desktop + mobile
 - [ ] Results page shows per-question breakdown with explanations

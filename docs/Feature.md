@@ -15,16 +15,15 @@ Sections marked **(proposed)** are v2.0 changes awaiting approval. Everything el
 | Why it exists | Origin story: the college site crashed during SGPA calculation season |
 | Final CTA | Repeats the hero actions |
 
-**Logged in:** `/` is a short quick-access view (Popular tools: Resources, QuizEngine; Other tools: GPA Calculator, Internal Marks Calculator, Programming) with the same footer as the landing page.
+**Logged in:** `/` is a short quick-access view (Popular tools: Resources, QuizEngine; Other tools: GPA Calculator and Internal Marks Calculator) with the same footer as the landing page.
 
 | Area | Flow |
 |------|------|
 | Resources | `/pyqs` today. Final routes: `/resources` → `/resources/:year` → `/resources/:year/:subject` with PYQs, Playlists, Notes tabs. Each paper shows two PDF cards (questions only; questions + solution), both opening in the in-site viewer. Known bugs and gaps: `ERRORS.md` → Known Bugs (R1–R7, P1–P4); proposed improvements: section 8.1 |
-| QuizEngine | `/quizzes` → mode (College viva / NPTEL) → topic card → `/quizzes/:topicId` → `/quizzes/results`; also `/quizzes/leaderboard`, `/quizzes/history`. Graph view removed |
+| QuizEngine | `/quizzes` → mode (College viva / NPTEL) → topic card → `/quizzes/:topicId` → `/quizzes/results`; also `/quizzes/history`. Graph view removed |
 | Calculators | `/sgpa` (SGPA + CGPA), `/internal` |
 | Tasks | `/tasks` — deadline-first view with Kanban as a secondary view, scheduled last |
 | Admin | `/admin-upload` today (backend enforces admin). **(proposed)** an admin dashboard UI for uploading content easily: PYQ and solution PDFs, notes, playlists, and per-subject question JSON |
-| Hidden | `/tracker` — removed from homepage and nav, route untouched. `/programming` — still absent from the nav, but a card was added to the homepage tool grid and footer on 2026-10-22 while `PRD.md` §4.3 still lists it as hidden; owner to confirm (`PRD.md` §8) |
 
 Auth gate: `useAuth().token`. Logged-in users hitting `/login` or `/register` are redirected to `/`; unknown routes redirect to `/` (logged in) or `/login` (logged out). All routes are lazy-loaded.
 
@@ -40,17 +39,17 @@ Express 5 API (Render free tier, /health pinged by UptimeRobot)
    └── OAuth via Passport (Google today; GitHub, Microsoft proposed) → redirect to FE /auth/callback?token=&user=
 ```
 
-**Auth:** email/password (bcrypt) or OAuth provider → JWT (7 days) → `authMiddleware` sets `req.user`. Admin check is a local `adminOnly` function inside `resourceRoutes.js` and `pyqRoutes.js`.
+**Auth:** email/password (bcrypt) or OAuth provider → JWT (7 days) → `authMiddleware` sets `req.user`. Admin-only routes use the shared `middleware/adminOnly.js`.
 
-**Client-side only:** SGPA, CGPA, Internal Marks, UG Life Tracker (hidden).
+**Client-side only:** SGPA, CGPA, Internal Marks.
 
-**Server-backed:** auth, quiz, leaderboard, resources/PYQs, PYQ progress and notes, tasks.
+**Server-backed:** auth, quiz, resources/PYQs, PYQ progress and notes, tasks.
 
 ## 3. Data model
 
 | Model | Purpose |
 |-------|---------|
-| User | Credentials, Google ID, avatar, total score, quiz progress map, role |
+| User | Credentials, Google ID, avatar, quiz progress map, role |
 | Topic | Quiz topic: name, description, icon, color, prerequisites, graph position, passing score, order |
 | Question | MCQ with 2–5 options, difficulty, explanation, tags, time limit |
 | QuizAttempt | Score, percentage, passed, per-answer records |
@@ -58,7 +57,6 @@ Express 5 API (Render free tier, /health pinged by UptimeRobot)
 | UserPYQProgress | Per-user, per-paper `attempted` flag and `notes` |
 | Task | Title, description, status, due date, user |
 | Pyq | Shim re-exporting Resource |
-| Programming* | ProgrammingTopic / Problem / Progress (hidden feature, own module) |
 
 **(proposed) changes**
 - **Resource:** add a playlist type; each paper has two PDFs (questions only; questions + solution) that share a paper key on `Resource` and link to each other, with a variant marker on each; move `year` and `subject` to controlled values so year → subject navigation is reliable.
@@ -74,15 +72,14 @@ All routes are under `/api`.
 | Prefix | Notes |
 |--------|-------|
 | `/auth` | register, login, me, profile, upload-avatar, google, google/callback |
-| `/topics`, `/questions`, `/quiz`, `/leaderboard`, `/users` | QuizEngine |
+| `/topics`, `/questions`, `/quiz`, `/users` | QuizEngine |
 | `/tasks` | CRUD, JWT |
 | `/resources` | list, get, upload (admin), patch (admin), delete (admin). List and get currently populate `uploadedBy` (name, email) for every caller (`ERRORS.md` R7). **(proposed)** `GET /resources/summary`: grouped counts per year and subject for the Resources year and subject pages |
 | `/pyqs` | list, upload (admin), delete (admin) — reads `Resource` where type is `pyqs` |
 | `/pyq-progress` | `GET /` all progress for the user; `PUT /:paperId` upsert attempted + notes |
-| `/programming` | hidden feature |
 | `/health` | liveness |
 
-Global rate limit: 150 requests / 15 min / IP.
+Global rate limit: 150 requests / 15 min per authenticated user or anonymous client IP.
 
 ## 5. Folder structure
 
@@ -101,26 +98,23 @@ frontend/src/
     homepage/            HomePage (landing + member views) · HomeFooter (shared) · homeData.js (tools, features, proof stats) · peopleData.js · PeoplePage · BrandIcons
     pyqs/                dead code: PYQsPage.jsx is not imported and /pyqs redirects to /resources (ERRORS.md D1)
     quiz/                pages · components · utils · styles
-    ug-life-tracker/     hidden
-    programming/         hidden
     resources/           pages (ResourcesPage · YearPage · SubjectPage · ViewerSpike) · components (PdfViewer · AdminDashboard) · hooks/useProgress (API calls live in src/services/resourceService.js)
 
 backend/
   server.js
   config/       db · passport · cloudinary
   models/       User · Topic · Question · QuizAttempt · Resource · UserPYQProgress · Task · Pyq
-  controllers/  auth · quiz · question · topic · resource · task · leaderboard
-  routes/       auth · questions · quiz · topics · leaderboard · users · tasks · resources · pyqs · pyqProgress
+  controllers/  auth · quiz · question · topic · resource · task
+  routes/       auth · questions · quiz · topics · users · tasks · resources · pyqs · pyqProgress
   middleware/   authMiddleware · upload · avatarUpload · uploadMiddleware
   algorithms/   scoring · graph · sorting · shuffle
-  features/programming/   models · controllers · routes (hidden)
   data/         seed.js · questions/*.json (10 topics)
   scripts/      migratePyqs.js
 ```
 
 ## 6. Tech stack
 
-**Frontend:** React 18, Vite 8, React Router v7, Axios, lucide-react, react-icons, react-select, date-fns, html2pdf.js / jsPDF / html2canvas, @monaco-editor/react (Programming), @vercel/analytics and speed-insights.
+**Frontend:** React 18, Vite 8, React Router v7, Axios, lucide-react, react-icons, react-select, date-fns, html2pdf.js / jsPDF / html2canvas, @vercel/analytics and speed-insights.
 `react-pdf` for the in-site viewer (approved).
 
 **Backend:** Node.js, Express 5, Mongoose 9, jsonwebtoken, bcryptjs, Passport (Google OAuth 2.0), Multer 2, multer-storage-cloudinary, Cloudinary v1, express-rate-limit, cors, dotenv.
@@ -135,7 +129,6 @@ backend/
 - Admin dashboard route.
 - Field names for the shared paper key and the cross-link between a paper's two PDFs.
 - Resources bugs and improvements from the 2026-10-22 review: `ERRORS.md` → Known Bugs; section 8 below.
-- Whether Programming stays on the homepage (`PRD.md` §8).
 
 ## 8. Proposed improvements (2026-10-22 review)
 

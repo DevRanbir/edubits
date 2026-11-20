@@ -2,6 +2,7 @@ const express  = require("express");
 const router   = express.Router();
 const protect  = require("../middleware/authMiddleware");
 const { uploadFor } = require("../middleware/upload");
+const adminOnly = require("../middleware/adminOnly");
 const rateLimit = require("express-rate-limit");
 const Resource = require("../models/Resource");
 const cloudinary = require("../config/cloudinary");
@@ -12,13 +13,6 @@ const uploadLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: "Too many upload attempts. Try again later." },
 });
-
-const adminOnly = (req, res, next) => {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ success: false, error: "Admin access required." });
-  }
-  next();
-};
 
 const handleMulterError = (multerMw) => (req, res, next) => {
   multerMw(req, res, (err) => {
@@ -38,12 +32,12 @@ router.get("/", protect, async (req, res) => {
     if (paperKey) filter.paperKey = paperKey;
     if (variant)  filter.variant  = variant;
 
-    const pyqss = await Resource.find(filter)
+    const pyqs = await Resource.find(filter)
       .sort({ sortOrder: -1, createdAt: -1 })
       .select("-uploadedBy")
       .lean();
 
-    res.json({ success: true, pyqss });
+    res.json({ success: true, pyqs });
   } catch (err) {
     res.status(500).json({ success: false, message: "Request failed" });
   }

@@ -234,7 +234,6 @@ async function seed() {
         email: adminEmail,
         password: await bcrypt.hash(adminPassword, 12),
         role: "admin",
-        totalScore: 0,
       });
       console.info("✅ Admin created from configured seed credentials");
     } else {

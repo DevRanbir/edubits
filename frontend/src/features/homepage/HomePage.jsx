@@ -7,7 +7,6 @@ import {
   ClipboardList,
   ArrowRight,
   Clock,
-  Code2,
 } from "lucide-react";
 import { useAuth } from "../../context/authValue";
 import { API_URL } from "../../config/api";
@@ -224,14 +223,6 @@ function MemberView({ user }) {
       icon: ClipboardList,
       badge: "Planner",
     },
-    {
-      id: "programming",
-      name: "Programming Hub",
-      desc: "Practice coding problems, debug test cases, and master algorithms.",
-      href: "/programming",
-      icon: Code2,
-      badge: "Code",
-    },
   ];
 
   return (
@@ -385,10 +376,6 @@ function MemberView({ user }) {
               <div className="hp-deck-footer-actions">
                 <Link to="/quizzes" className="hp-secondary-nav-link">
                   <span>Browse All Topics</span>
-                  <ArrowRight size={13} />
-                </Link>
-                <Link to="/quizzes/leaderboard" className="hp-secondary-nav-link">
-                  <span>Leaderboard</span>
                   <ArrowRight size={13} />
                 </Link>
               </div>

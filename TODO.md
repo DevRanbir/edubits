@@ -7,21 +7,21 @@
 ### Hardening
 - [ ] Run `npm run build` locally and redeploy; retest Google/GitHub/Microsoft login on production
 - [ ] `git rm -r --cached backend/uploads` (22 images still tracked)
-- [ ] Set `BACKEND_URL`, `FRONTEND_URL`, `NODE_ENV=production`, `CORS_ORIGINS` on Render; `VITE_API_URL` (ending in `/api`) on Vercel
+- [ ] Set `BACKEND_URL`, `FRONTEND_URL`, `NODE_ENV=production` on Render and `VITE_API_URL` (ending in `/api`) on Vercel. Use the exact frontend origin for `FRONTEND_URL`; preview origins require explicit configuration.
 - [ ] Fix remaining `set-state-in-effect` lint errors (OnboardingModal, PYQsPage, RegisterPage, SGPA, DateOverridePanel)
-- [ ] Add `/about` route; wrap `/programming/admin` in `AdminRoute`
+- [ ] Restore a usable `/about` page
 - [ ] Replace JWT-in-URL OAuth redirect with a one-time code
 
 ### General
 - [ ] Post-tool feedback prompt (CGPA calculated, quiz results, PYQ completed) — "Was this helpful?" Yes/No + optional text box for what was missing
 - [ ] Floating feedback button (bottom right) — 🐛 Report Bug / 💡 Suggest Feature / ❤️ Appreciation + textbox, store origin tool/page
   - [ ] Only prompt active users (3+ visits && 10+ min active)
-  - [ ] Contextual prompts: "Missing a PYQ? Request one." / "Want a quiz for another subject? Suggest one." / "What would make this tracker more useful?"
+  - [ ] Contextual prompts: "Missing a PYQ? Request one." / "Want a quiz for another subject? Suggest one." / "What would make your task list more useful?"
   - [ ] Post-feedback thank-you message referencing roadmap review
 - [ ] Roadmap page (planned / building / completed) surfacing feedback publicly
 - [ ] Per-app "explain your use case" prompts — written from a user's perspective, not assumed
 - [ ] Most/expected/important questions section
-- [ ] PYQ solutions (distinction-level)
+- [ ] Audit PYQ solution coverage and add curated, distinction-level worked solutions where missing
 - [ ] Persist data in a proper database (replace whatever's ephemeral now)
 
 ### Homepage
@@ -41,11 +41,10 @@
 - [ ] Preview system — show counts, tags, difficulty before opening
 
 ### Quiz Engine
-- [ ] Quiz Engine: fix ~3s loading time
+- [ ] Measure production quiz-start latency after query optimization; investigate if p95 exceeds 1 second
 - [ ] Update color scheme per subject
 - [ ] Concentric circle visualization in results
-- [ ] Show correct option at end with tick/cross feedback
-- [ ] Leaderboard across users
+- [x] Show correct option at end with tick/cross feedback
 
 ### Grades
 - [ ] Brighter red for target simulator
@@ -63,9 +62,6 @@
 - [ ] Improve color scheme
 - [ ] Usage guide for this tool
 - [ ] Fill empty states with dummy data
-
-### Eng Tracker
-- [ ] Likely needs a full UI refactor
 
 ### Later
 - [ ] Notes feature

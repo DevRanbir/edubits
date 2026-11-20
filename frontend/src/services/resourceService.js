@@ -169,7 +169,7 @@ export const fetchPyqs = async ({ subject, year, semester, paperKey, variant } =
   if (variant)  params.variant  = variant;
 
   const { data } = await api.get("/pyqs", { params });
-  return data.pyqss || [];
+  return data.pyqs || [];
 };
 
 export const deleteResource = async (id) => {

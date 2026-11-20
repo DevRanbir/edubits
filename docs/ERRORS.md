@@ -23,16 +23,12 @@ Last full run: 2026-10-21 - **35 errors, 6 warnings** (was 48 / 6). Re-run `npm 
 | `src/context/AuthContext.jsx` | 15, 85 | `err` | **TODO** - use `catch {` |
 | `src/features/cgpa/CGPA.jsx` | 29, 30, 31, 66 | `maxVal`, `barW`, `gap` | **TODO** - remove unused consts in `BarChart` |
 | `src/features/onboarding/OnboardingModal.jsx` | 52 | `user` | **TODO** - remove |
-| `src/features/programming/pages/TopicProblemsPage.jsx` | 59, 79 | `err` | **TODO** - use `catch {` |
 | `src/features/quiz/pages/QuizPage.jsx` | 281, 341 | `isMulti`, `isMultiSelect` | **TODO** - remove |
 | `src/features/quiz/pages/ResultsPage.jsx` | 174 | `isMultiSelect` | **TODO** - remove |
 | `src/features/resources/components/PdfViewer.jsx` | 13 | `paperKey` (prop) | **TODO** - remove from props or use |
 | `src/features/resources/pages/ResourcesPage.jsx` | 1, 44 | `useCallback`, `progressMap`, `progressLoading` | **TODO** - remove (or wire up progress UI) |
 | `src/features/sgpa/SGPA.jsx` | 138, 217 | `loadExample`, `isEmpty` | **TODO** - remove or use |
 | `src/features/tasks/components/TaskCard.jsx` | 1 | `formatDate` | **TODO** - remove import |
-| `src/features/ug-life-tracker/components/DateOverridePanel.jsx` | 3 | `overrides` (prop) | **TODO** - remove or use |
-| `src/features/ug-life-tracker/components/ReflectionEditor.jsx` | 27 | `activePrompt` | **TODO** - remove or use |
-| `src/features/ug-life-tracker/components/WeekDetailsDrawer.jsx` | 4 | `isBeforeWeek` | **TODO** - remove import |
 | `src/features/sgpa/SGPA.jsx` | 118 | empty `catch {}` block (`no-empty`) | **TODO** - add a comment or handle the error |
 
 ### 2. React Hooks Issues
@@ -43,7 +39,6 @@ Last full run: 2026-10-21 - **35 errors, 6 warnings** (was 48 / 6). Re-run `npm 
 | `src/features/pyqs/PYQsPage.jsx` | 675 | `setNotes`/`setAttempted` in `useEffect` | **TODO** - use lazy state initialiser |
 | `src/features/quiz/pages/RegisterPage.jsx` | 16 | `setState` in `useEffect` | **TODO** |
 | `src/features/sgpa/SGPA.jsx` | 58, 131 | `setState` in `useEffect` | **TODO** |
-| `src/features/ug-life-tracker/components/DateOverridePanel.jsx` | 17 | `setState` in `useEffect` | **TODO** |
 | `src/features/tasks/components/TaskModal.jsx` | 32 | `resetForm` used before it is declared | **TODO** - move declaration above the effect |
 | `src/features/quiz/components/Graph/TopicCard.jsx` | 30 | component created during render | **TODO** - move `TopicIcon` outside the component |
 
@@ -199,7 +194,7 @@ Found in the 2026-10-22 review of the Resources feature and the homepage. Lint a
 
 ### Fixed: Rate limiter shared one IP, CORS accepted any *.vercel.app, error handler masked 4xx
 **Files:** `backend/server.js`, `backend/.env.example`, `.gitignore`  
-**Fix:** `app.set("trust proxy", 1)`; explicit CORS allow-list (`FRONTEND_URL`, `CORS_ORIGINS`); required env vars checked at startup; malformed JSON and multer errors return 400 and 5xx messages are hidden in production; `.env.example` now matches the variable names the code reads; `backend/uploads/` added to `.gitignore`  
+**Fix:** `app.set("trust proxy", 1)`; authenticated rate-limit buckets use the user ID while anonymous requests use client IP; CORS allows the exact `FRONTEND_URL` and local port 5173 outside production; required env vars checked at startup; malformed JSON and multer errors return 400 and 5xx messages are hidden in production; `.env.example` matches the variables the code reads; `backend/uploads/` is ignored.
 **Date:** 2026-10-21
 
 ### Fixed: ESLint reported used components as unused
@@ -274,18 +269,18 @@ Found in the 2026-10-22 review of the Resources feature and the homepage. Lint a
 ### High Priority
 1. **Run `npm run build` locally.** The 2026-10-21 audit could not build (the `node_modules` in the zip came from macOS arm64 and Rolldown's native binding is platform-specific). Never zip or commit `node_modules`.
 2. **Retest OAuth end-to-end** (Google, GitHub, Microsoft) on the deployed backend - the verify-callback bug meant it had likely never succeeded.
-3. **Set production env vars** on Render: `BACKEND_URL`, `FRONTEND_URL`, `NODE_ENV=production`, `CORS_ORIGINS` (for any Vercel preview URLs you need), and on Vercel: `VITE_API_URL` (must end in `/api`).
+3. **Set production env vars** on Render: `BACKEND_URL`, `FRONTEND_URL`, `NODE_ENV=production`; on Vercel: `VITE_API_URL` (must end in `/api`). Set `FRONTEND_URL` to the exact frontend origin; preview domains require explicit configuration.
 4. Run `git rm -r --cached backend/uploads` so the 22 already-tracked images leave the repo (`.gitignore` only stops new ones).
 
 ### Medium Priority
 5. Fix the remaining `set-state-in-effect` errors and `TopicCard` / `TaskModal` hook errors (tables above).
 6. Remove unused variables (about 25 instances).
-7. Add a `/about` route (`AboutPage.jsx` exists; the footer links to it) or remove the link. Wrap `/programming/admin` in `AdminRoute`.
+7. Restore a usable `/about` page or remove the link.
 8. Move `useAuth` / `useToast` out of the provider files (react-refresh).
 
 ### Low Priority
 9. Clean up stray files - `src/UploadTest.jsx`, `src/app/routes.jsx`, empty `backend/middleware/avatarUpload.js` (`HomeFooter.jsx` is now the shared homepage footer, no longer stray).
-10. Consolidate `adminOnly` middleware - defined in both `resourceRoutes.js` and `pyqRoutes.js`.
+10. `adminOnly` middleware is shared from `backend/middleware/adminOnly.js`.
 11. Standardise response shapes - `pyqProgressRoutes` returns `{ error }`, others return `{ success, message }`.
 12. Update `claude.md` - stale (lists 6 quiz topics, seed has 10).
 13. Replace the JWT-in-URL OAuth redirect with a one-time code exchange.
